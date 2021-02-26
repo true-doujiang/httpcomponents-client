@@ -25,7 +25,7 @@
  *
  */
 
-package org.apache.http.examples.client;
+package org.apache.http.client;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

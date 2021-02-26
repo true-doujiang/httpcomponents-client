@@ -24,52 +24,51 @@
  * <http://www.apache.org/>.
  *
  */
-package org.apache.http.examples.client;
 
-import java.io.File;
-import java.io.FileInputStream;
+package org.apache.http.client;
 
+import java.util.List;
+
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 /**
- * Example how to use unbuffered chunk-encoded POST request.
+ * This example demonstrates the use of a local HTTP context populated with
+ * custom attributes.
  */
-public class ClientChunkEncodedPost {
+public class ClientCustomContext {
 
-    public static void main(String[] args) throws Exception {
-        if (args.length != 1)  {
-            System.out.println("File path not given");
-            System.exit(1);
-        }
+    public final static void main(String[] args) throws Exception {
         CloseableHttpClient httpclient = HttpClients.createDefault();
         try {
-            HttpPost httppost = new HttpPost("http://httpbin.org/post");
+            // Create a local instance of cookie store
+            CookieStore cookieStore = new BasicCookieStore();
 
-            File file = new File(args[0]);
+            // Create local HTTP context
+            HttpClientContext localContext = HttpClientContext.create();
+            // Bind custom cookie store to the local context
+            localContext.setCookieStore(cookieStore);
 
-            InputStreamEntity reqEntity = new InputStreamEntity(
-                    new FileInputStream(file), -1, ContentType.APPLICATION_OCTET_STREAM);
-            reqEntity.setChunked(true);
-            // It may be more appropriate to use FileEntity class in this particular
-            // instance but we are using a more generic InputStreamEntity to demonstrate
-            // the capability to stream out data from any arbitrary source
-            //
-            // FileEntity entity = new FileEntity(file, "binary/octet-stream");
+            HttpGet httpget = new HttpGet("http://httpbin.org/cookies");
+            System.out.println("Executing request " + httpget.getRequestLine());
 
-            httppost.setEntity(reqEntity);
-
-            System.out.println("Executing request: " + httppost.getRequestLine());
-            CloseableHttpResponse response = httpclient.execute(httppost);
+            // Pass local context as a parameter
+            CloseableHttpResponse response = httpclient.execute(httpget, localContext);
             try {
                 System.out.println("----------------------------------------");
                 System.out.println(response.getStatusLine());
-                System.out.println(EntityUtils.toString(response.getEntity()));
+                List<Cookie> cookies = cookieStore.getCookies();
+                for (int i = 0; i < cookies.size(); i++) {
+                    System.out.println("Local cookie: " + cookies.get(i));
+                }
+                EntityUtils.consume(response.getEntity());
             } finally {
                 response.close();
             }
@@ -79,3 +78,4 @@ public class ClientChunkEncodedPost {
     }
 
 }
+

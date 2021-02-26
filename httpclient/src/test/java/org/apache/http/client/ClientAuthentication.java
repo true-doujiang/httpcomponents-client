@@ -24,54 +24,41 @@
  * <http://www.apache.org/>.
  *
  */
+package org.apache.http.client;
 
-package org.apache.http.examples.client;
-
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.apache.http.HttpEntity;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
 /**
- * This example demonstrates the recommended way of using API to make sure
- * the underlying connection gets released back to the connection manager.
+ * A simple example that uses HttpClient to execute an HTTP request against
+ * a target site that requires user authentication.
  */
-public class ClientConnectionRelease {
+public class ClientAuthentication {
 
-    public final static void main(String[] args) throws Exception {
-        CloseableHttpClient httpclient = HttpClients.createDefault();
+    public static void main(String[] args) throws Exception {
+        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+        credsProvider.setCredentials(
+                new AuthScope("httpbin.org", 80),
+                new UsernamePasswordCredentials("user", "passwd"));
+        CloseableHttpClient httpclient = HttpClients.custom()
+                .setDefaultCredentialsProvider(credsProvider)
+                .build();
         try {
-            HttpGet httpget = new HttpGet("http://httpbin.org/get");
+            HttpGet httpget = new HttpGet("http://httpbin.org/basic-auth/user/passwd");
 
             System.out.println("Executing request " + httpget.getRequestLine());
             CloseableHttpResponse response = httpclient.execute(httpget);
             try {
                 System.out.println("----------------------------------------");
                 System.out.println(response.getStatusLine());
-
-                // Get hold of the response entity
-                HttpEntity entity = response.getEntity();
-
-                // If the response does not enclose an entity, there is no need
-                // to bother about connection release
-                if (entity != null) {
-                    InputStream inStream = entity.getContent();
-                    try {
-                        inStream.read();
-                        // do something useful with the response
-                    } catch (IOException ex) {
-                        // In case of an IOException the connection will be released
-                        // back to the connection manager automatically
-                        throw ex;
-                    } finally {
-                        // Closing the input stream will trigger connection release
-                        inStream.close();
-                    }
-                }
+                System.out.println(EntityUtils.toString(response.getEntity()));
             } finally {
                 response.close();
             }
@@ -79,6 +66,4 @@ public class ClientConnectionRelease {
             httpclient.close();
         }
     }
-
 }
-

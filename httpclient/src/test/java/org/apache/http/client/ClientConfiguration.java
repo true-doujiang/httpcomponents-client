@@ -25,7 +25,7 @@
  *
  */
 
-package org.apache.http.examples.client;
+package org.apache.http.client;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

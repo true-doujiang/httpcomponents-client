@@ -24,39 +24,48 @@
  * <http://www.apache.org/>.
  *
  */
+package org.apache.http.client;
 
-package org.apache.http.examples.client;
+import java.io.File;
+import java.io.FileInputStream;
 
-import org.apache.http.HttpHost;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 /**
- * How to send a request via proxy.
- *
- * @since 4.0
+ * Example how to use unbuffered chunk-encoded POST request.
  */
-public class ClientExecuteProxy {
+public class ClientChunkEncodedPost {
 
-    public static void main(String[] args)throws Exception {
+    public static void main(String[] args) throws Exception {
+        if (args.length != 1)  {
+            System.out.println("File path not given");
+            System.exit(1);
+        }
         CloseableHttpClient httpclient = HttpClients.createDefault();
         try {
-            HttpHost target = new HttpHost("httpbin.org", 443, "https");
-            HttpHost proxy = new HttpHost("127.0.0.1", 8080, "http");
+            HttpPost httppost = new HttpPost("http://httpbin.org/post");
 
-            RequestConfig config = RequestConfig.custom()
-                    .setProxy(proxy)
-                    .build();
-            HttpGet request = new HttpGet("/");
-            request.setConfig(config);
+            File file = new File(args[0]);
 
-            System.out.println("Executing request " + request.getRequestLine() + " to " + target + " via " + proxy);
+            InputStreamEntity reqEntity = new InputStreamEntity(
+                    new FileInputStream(file), -1, ContentType.APPLICATION_OCTET_STREAM);
+            reqEntity.setChunked(true);
+            // It may be more appropriate to use FileEntity class in this particular
+            // instance but we are using a more generic InputStreamEntity to demonstrate
+            // the capability to stream out data from any arbitrary source
+            //
+            // FileEntity entity = new FileEntity(file, "binary/octet-stream");
 
-            CloseableHttpResponse response = httpclient.execute(target, request);
+            httppost.setEntity(reqEntity);
+
+            System.out.println("Executing request: " + httppost.getRequestLine());
+            CloseableHttpResponse response = httpclient.execute(httppost);
             try {
                 System.out.println("----------------------------------------");
                 System.out.println(response.getStatusLine());

@@ -24,32 +24,56 @@
  * <http://www.apache.org/>.
  *
  */
+package org.apache.http.client;
 
-package org.apache.http.examples.client;
+import java.io.File;
 
+import javax.net.ssl.SSLContext;
+
+import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContexts;
+import org.apache.http.util.EntityUtils;
 
 /**
- * This example demonstrates how to abort an HTTP method before its normal completion.
+ * This example demonstrates how to create secure connections with a custom SSL
+ * context.
  */
-public class ClientAbortMethod {
+public class ClientCustomSSL {
 
     public final static void main(String[] args) throws Exception {
-        CloseableHttpClient httpclient = HttpClients.createDefault();
+        // Trust own CA and all self-signed certs
+        SSLContext sslcontext = SSLContexts.custom()
+                .loadTrustMaterial(new File("my.keystore"), "nopassword".toCharArray(),
+                        new TrustSelfSignedStrategy())
+                .build();
+        // Allow TLSv1 protocol only
+        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+                sslcontext,
+                new String[] { "TLSv1" },
+                null,
+                SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+        CloseableHttpClient httpclient = HttpClients.custom()
+                .setSSLSocketFactory(sslsf)
+                .build();
         try {
-            HttpGet httpget = new HttpGet("http://httpbin.org/get");
 
-            System.out.println("Executing request " + httpget.getURI());
+            HttpGet httpget = new HttpGet("https://httpbin.org/");
+
+            System.out.println("Executing request " + httpget.getRequestLine());
+
             CloseableHttpResponse response = httpclient.execute(httpget);
             try {
+                HttpEntity entity = response.getEntity();
+
                 System.out.println("----------------------------------------");
                 System.out.println(response.getStatusLine());
-                // Do not feel like reading the response body
-                // Call abort on the request object
-                httpget.abort();
+                EntityUtils.consume(entity);
             } finally {
                 response.close();
             }
@@ -59,4 +83,3 @@ public class ClientAbortMethod {
     }
 
 }
-

@@ -24,56 +24,53 @@
  * <http://www.apache.org/>.
  *
  */
-package org.apache.http.examples.client;
+package org.apache.http.client;
 
-import java.io.File;
-
-import javax.net.ssl.SSLContext;
-
-import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 
 /**
- * This example demonstrates how to create secure connections with a custom SSL
- * context.
+ * A simple example that uses HttpClient to execute an HTTP request
+ * over a secure connection tunneled through an authenticating proxy.
  */
-public class ClientCustomSSL {
+public class ClientProxyAuthentication {
 
-    public final static void main(String[] args) throws Exception {
-        // Trust own CA and all self-signed certs
-        SSLContext sslcontext = SSLContexts.custom()
-                .loadTrustMaterial(new File("my.keystore"), "nopassword".toCharArray(),
-                        new TrustSelfSignedStrategy())
-                .build();
-        // Allow TLSv1 protocol only
-        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
-                sslcontext,
-                new String[] { "TLSv1" },
-                null,
-                SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+    public static void main(String[] args) throws Exception {
+        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+        credsProvider.setCredentials(
+                new AuthScope("localhost", 8888),
+                new UsernamePasswordCredentials("squid", "squid"));
+        credsProvider.setCredentials(
+                new AuthScope("httpbin.org", 80),
+                new UsernamePasswordCredentials("user", "passwd"));
         CloseableHttpClient httpclient = HttpClients.custom()
-                .setSSLSocketFactory(sslsf)
-                .build();
+                .setDefaultCredentialsProvider(credsProvider).build();
         try {
+            HttpHost target = new HttpHost("httpbin.org", 80, "http");
+            HttpHost proxy = new HttpHost("localhost", 8888);
 
-            HttpGet httpget = new HttpGet("https://httpbin.org/");
+            RequestConfig config = RequestConfig.custom()
+                .setProxy(proxy)
+                .build();
+            HttpGet httpget = new HttpGet("/basic-auth/user/passwd");
+            httpget.setConfig(config);
 
-            System.out.println("Executing request " + httpget.getRequestLine());
+            System.out.println("Executing request " + httpget.getRequestLine() + " to " + target + " via " + proxy);
 
-            CloseableHttpResponse response = httpclient.execute(httpget);
+            CloseableHttpResponse response = httpclient.execute(target, httpget);
             try {
-                HttpEntity entity = response.getEntity();
-
                 System.out.println("----------------------------------------");
                 System.out.println(response.getStatusLine());
-                EntityUtils.consume(entity);
+                System.out.println(EntityUtils.toString(response.getEntity()));
             } finally {
                 response.close();
             }
@@ -81,5 +78,4 @@ public class ClientCustomSSL {
             httpclient.close();
         }
     }
-
 }
