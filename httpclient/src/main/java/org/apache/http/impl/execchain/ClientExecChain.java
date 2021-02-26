@@ -48,6 +48,8 @@ import org.apache.http.conn.routing.HttpRoute;
  * </p>
  *
  * @since 4.3
+ *
+ * 执行器链条   包装设计模式 + 责任链设计模式  我的猜想
  */
 public interface ClientExecChain {
 

@@ -53,6 +53,9 @@ class RequestEntityProxy implements HttpEntity  {
         return entity instanceof RequestEntityProxy;
     }
 
+    /**
+     *
+     */
     static boolean isRepeatable(final HttpRequest request) {
         if (request instanceof HttpEntityEnclosingRequest) {
             final HttpEntity entity = ((HttpEntityEnclosingRequest) request).getEntity();
@@ -63,6 +66,7 @@ class RequestEntityProxy implements HttpEntity  {
                         return true;
                     }
                 }
+                //
                 return entity.isRepeatable();
             }
         }

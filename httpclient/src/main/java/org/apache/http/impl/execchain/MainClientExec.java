@@ -90,6 +90,7 @@ public class MainClientExec implements ClientExecChain {
 
     private final Log log = LogFactory.getLog(getClass());
 
+    //
     private final HttpRequestExecutor requestExecutor;
     private final HttpClientConnectionManager connManager;
     private final ConnectionReuseStrategy reuseStrategy;
@@ -146,6 +147,9 @@ public class MainClientExec implements ClientExecChain {
                 targetAuthStrategy, proxyAuthStrategy, userTokenHandler);
     }
 
+    /**
+     * 干活的方法
+     */
     @Override
     public CloseableHttpResponse execute(
             final HttpRoute route,
@@ -156,6 +160,7 @@ public class MainClientExec implements ClientExecChain {
         Args.notNull(request, "HTTP request");
         Args.notNull(context, "HTTP context");
 
+        // 权限认证相关 忽略
         AuthState targetAuthState = context.getTargetAuthState();
         if (targetAuthState == null) {
             targetAuthState = new AuthState();
@@ -167,6 +172,7 @@ public class MainClientExec implements ClientExecChain {
             context.setAttribute(HttpClientContext.PROXY_AUTH_STATE, proxyAuthState);
         }
 
+        //
         if (request instanceof HttpEntityEnclosingRequest) {
             RequestEntityProxy.enhance((HttpEntityEnclosingRequest) request);
         }
@@ -219,11 +225,12 @@ public class MainClientExec implements ClientExecChain {
             }
 
             HttpResponse response;
+
             for (int execCount = 1;; execCount++) {
 
+                // 重试时发现 httpEntity是不可以重复读取的则抛异常
                 if (execCount > 1 && !RequestEntityProxy.isRepeatable(request)) {
-                    throw new NonRepeatableRequestException("Cannot retry request " +
-                            "with a non-repeatable request entity.");
+                    throw new NonRepeatableRequestException("Cannot retry request with a non-repeatable request entity.");
                 }
 
                 if (execAware != null && execAware.isAborted()) {
@@ -269,6 +276,7 @@ public class MainClientExec implements ClientExecChain {
                 }
 
                 context.setAttribute(HttpCoreContext.HTTP_REQUEST, request);
+
                 response = requestExecutor.execute(request, managedConn, context);
 
                 // The connection is in or can be brought to a re-usable state.
@@ -290,8 +298,7 @@ public class MainClientExec implements ClientExecChain {
                     connHolder.markNonReusable();
                 }
 
-                if (needAuthentication(
-                        targetAuthState, proxyAuthState, route, response, context)) {
+                if (needAuthentication(targetAuthState, proxyAuthState, route, response, context)) {
                     // Make sure the response body is fully consumed, if present
                     final HttpEntity entity = response.getEntity();
                     if (connHolder.isReusable()) {

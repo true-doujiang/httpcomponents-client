@@ -156,13 +156,16 @@ import org.apache.http.util.VersionInfo;
  */
 public class HttpClientBuilder {
 
+    //
     private HttpRequestExecutor requestExec;
     private HostnameVerifier hostnameVerifier;
     private LayeredConnectionSocketFactory sslSocketFactory;
     private SSLContext sslContext;
+    //
     private HttpClientConnectionManager connManager;
     private boolean connManagerShared;
     private SchemePortResolver schemePortResolver;
+    //
     private ConnectionReuseStrategy reuseStrategy;
     private ConnectionKeepAliveStrategy keepAliveStrategy;
     private AuthenticationStrategy targetAuthStrategy;
@@ -215,12 +218,17 @@ public class HttpClientBuilder {
 
     private List<Closeable> closeables;
 
+    //
     private PublicSuffixMatcher publicSuffixMatcher;
+
 
     public static HttpClientBuilder create() {
         return new HttpClientBuilder();
     }
 
+    /**
+     * default construct
+     */
     protected HttpClientBuilder() {
         super();
     }
@@ -941,6 +949,9 @@ public class HttpClientBuilder {
         return s.split(" *, *");
     }
 
+    /**
+     * 用户代码调用 创建Httpclient
+     */
     public CloseableHttpClient build() {
         // Create main request executor
         // We copy the instance fields to avoid changing them, and rename to avoid accidental use of the wrong version
@@ -953,6 +964,7 @@ public class HttpClientBuilder {
         if (requestExecCopy == null) {
             requestExecCopy = new HttpRequestExecutor();
         }
+
         HttpClientConnectionManager connManagerCopy = this.connManager;
         if (connManagerCopy == null) {
             LayeredConnectionSocketFactory sslSocketFactoryCopy = this.sslSocketFactory;
@@ -1014,6 +1026,8 @@ public class HttpClientBuilder {
             }
             connManagerCopy = poolingmgr;
         }
+
+        //
         ConnectionReuseStrategy reuseStrategyCopy = this.reuseStrategy;
         if (reuseStrategyCopy == null) {
             if (systemProperties) {
@@ -1027,18 +1041,22 @@ public class HttpClientBuilder {
                 reuseStrategyCopy = DefaultClientConnectionReuseStrategy.INSTANCE;
             }
         }
+
         ConnectionKeepAliveStrategy keepAliveStrategyCopy = this.keepAliveStrategy;
         if (keepAliveStrategyCopy == null) {
             keepAliveStrategyCopy = DefaultConnectionKeepAliveStrategy.INSTANCE;
         }
+
         AuthenticationStrategy targetAuthStrategyCopy = this.targetAuthStrategy;
         if (targetAuthStrategyCopy == null) {
             targetAuthStrategyCopy = TargetAuthenticationStrategy.INSTANCE;
         }
+
         AuthenticationStrategy proxyAuthStrategyCopy = this.proxyAuthStrategy;
         if (proxyAuthStrategyCopy == null) {
             proxyAuthStrategyCopy = ProxyAuthenticationStrategy.INSTANCE;
         }
+
         UserTokenHandler userTokenHandlerCopy = this.userTokenHandler;
         if (userTokenHandlerCopy == null) {
             if (!connectionStateDisabled) {
@@ -1059,12 +1077,17 @@ public class HttpClientBuilder {
             }
         }
 
+
+        ImmutableHttpProcessor immutableHttpProcessor =
+                new ImmutableHttpProcessor(new RequestTargetHost(), new RequestUserAgent(userAgentCopy));
+
+        // 执行器链
         ClientExecChain execChain = createMainExec(
                 requestExecCopy,
                 connManagerCopy,
                 reuseStrategyCopy,
                 keepAliveStrategyCopy,
-                new ImmutableHttpProcessor(new RequestTargetHost(), new RequestUserAgent(userAgentCopy)),
+                immutableHttpProcessor,
                 targetAuthStrategyCopy,
                 proxyAuthStrategyCopy,
                 userTokenHandlerCopy);
@@ -1073,7 +1096,6 @@ public class HttpClientBuilder {
 
         HttpProcessor httpprocessorCopy = this.httpprocessor;
         if (httpprocessorCopy == null) {
-
             final HttpProcessorBuilder b = HttpProcessorBuilder.create();
             if (requestFirst != null) {
                 for (final HttpRequestInterceptor i: requestFirst) {
@@ -1133,6 +1155,7 @@ public class HttpClientBuilder {
             }
             httpprocessorCopy = b.build();
         }
+
         execChain = new ProtocolExec(execChain, httpprocessorCopy);
 
         execChain = decorateProtocolExec(execChain);

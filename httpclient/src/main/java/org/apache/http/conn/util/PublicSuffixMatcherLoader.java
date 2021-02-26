@@ -51,8 +51,8 @@ import org.apache.http.util.Args;
 public final class PublicSuffixMatcherLoader {
 
     private static PublicSuffixMatcher load(final InputStream in) throws IOException {
-        final List<PublicSuffixList> lists = new PublicSuffixListParser().parseByType(
-                new InputStreamReader(in, Consts.UTF_8));
+        InputStreamReader inputStreamReader = new InputStreamReader(in, Consts.UTF_8);
+        final List<PublicSuffixList> lists = new PublicSuffixListParser().parseByType(inputStreamReader);
         return new PublicSuffixMatcher(lists);
     }
 
@@ -82,8 +82,7 @@ public final class PublicSuffixMatcherLoader {
         if (DEFAULT_INSTANCE == null) {
             synchronized (PublicSuffixMatcherLoader.class) {
                 if (DEFAULT_INSTANCE == null){
-                    final URL url = PublicSuffixMatcherLoader.class.getResource(
-                            "/mozilla/public-suffix-list.txt");
+                    final URL url = PublicSuffixMatcherLoader.class.getResource("/mozilla/public-suffix-list.txt");
                     if (url != null) {
                         try {
                             DEFAULT_INSTANCE = load(url);
