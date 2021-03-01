@@ -53,12 +53,16 @@ public class RequestDefaultHeaders implements HttpRequestInterceptor {
 
     /**
      * @since 4.3
+     * constructor.
      */
     public RequestDefaultHeaders(final Collection<? extends Header> defaultHeaders) {
         super();
         this.defaultHeaders = defaultHeaders;
     }
 
+    /**
+     * Default constructor.
+     */
     public RequestDefaultHeaders() {
         this(null);
     }

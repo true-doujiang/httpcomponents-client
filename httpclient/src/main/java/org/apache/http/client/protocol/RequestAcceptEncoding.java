@@ -69,6 +69,9 @@ public class RequestAcceptEncoding implements HttpRequestInterceptor {
         }
     }
 
+    /**
+     * Default constructor.
+     */
     public RequestAcceptEncoding() {
         this(null);
     }

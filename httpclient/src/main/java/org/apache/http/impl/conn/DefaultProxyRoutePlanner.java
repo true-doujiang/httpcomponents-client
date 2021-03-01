@@ -47,6 +47,9 @@ public class DefaultProxyRoutePlanner extends DefaultRoutePlanner {
 
     private final HttpHost proxy;
 
+    /**
+     * constructor
+     */
     public DefaultProxyRoutePlanner(final HttpHost proxy, final SchemePortResolver schemePortResolver) {
         super(schemePortResolver);
         this.proxy = Args.notNull(proxy, "Proxy host");

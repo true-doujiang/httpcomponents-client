@@ -60,6 +60,7 @@ public class ManagedHttpClientConnectionFactory
 
     private static final AtomicLong COUNTER = new AtomicLong();
 
+    //
     public static final ManagedHttpClientConnectionFactory INSTANCE = new ManagedHttpClientConnectionFactory();
 
     private final Log log = LogFactory.getLog(DefaultManagedHttpClientConnection.class);
@@ -101,6 +102,9 @@ public class ManagedHttpClientConnectionFactory
         this(null, responseParserFactory);
     }
 
+    /**
+     * default construcrot
+     */
     public ManagedHttpClientConnectionFactory() {
         this(null, null);
     }
@@ -123,7 +127,9 @@ public class ManagedHttpClientConnectionFactory
             charEncoder.onMalformedInput(malformedInputAction);
             charEncoder.onUnmappableCharacter(unmappableInputAction);
         }
+
         final String id = "http-outgoing-" + Long.toString(COUNTER.getAndIncrement());
+
         return new LoggingManagedHttpClientConnection(
                 id,
                 log,

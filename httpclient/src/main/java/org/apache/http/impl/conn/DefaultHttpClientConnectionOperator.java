@@ -72,6 +72,9 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
     private final SchemePortResolver schemePortResolver;
     private final DnsResolver dnsResolver;
 
+    /**
+     * constructor
+     */
     public DefaultHttpClientConnectionOperator(
             final Lookup<ConnectionSocketFactory> socketFactoryRegistry,
             final SchemePortResolver schemePortResolver,
@@ -79,16 +82,15 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
         super();
         Args.notNull(socketFactoryRegistry, "Socket factory registry");
         this.socketFactoryRegistry = socketFactoryRegistry;
-        this.schemePortResolver = schemePortResolver != null ? schemePortResolver :
-            DefaultSchemePortResolver.INSTANCE;
-        this.dnsResolver = dnsResolver != null ? dnsResolver :
-            SystemDefaultDnsResolver.INSTANCE;
+        this.schemePortResolver = schemePortResolver != null
+                ? schemePortResolver : DefaultSchemePortResolver.INSTANCE;
+        this.dnsResolver = dnsResolver != null ? dnsResolver : SystemDefaultDnsResolver.INSTANCE;
     }
 
     @SuppressWarnings("unchecked")
     private Lookup<ConnectionSocketFactory> getSocketFactoryRegistry(final HttpContext context) {
-        Lookup<ConnectionSocketFactory> reg = (Lookup<ConnectionSocketFactory>) context.getAttribute(
-                SOCKET_FACTORY_REGISTRY);
+        Lookup<ConnectionSocketFactory> reg = (Lookup<ConnectionSocketFactory>)
+                context.getAttribute(SOCKET_FACTORY_REGISTRY);
         if (reg == null) {
             reg = this.socketFactoryRegistry;
         }
@@ -103,15 +105,17 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
             final int connectTimeout,
             final SocketConfig socketConfig,
             final HttpContext context) throws IOException {
+
         final Lookup<ConnectionSocketFactory> registry = getSocketFactoryRegistry(context);
         final ConnectionSocketFactory sf = registry.lookup(host.getSchemeName());
+
         if (sf == null) {
-            throw new UnsupportedSchemeException(host.getSchemeName() +
-                    " protocol is not supported");
+            throw new UnsupportedSchemeException(host.getSchemeName() + " protocol is not supported");
         }
         final InetAddress[] addresses = host.getAddress() != null ?
                 new InetAddress[] { host.getAddress() } : this.dnsResolver.resolve(host.getHostName());
         final int port = this.schemePortResolver.resolve(host);
+
         for (int i = 0; i < addresses.length; i++) {
             final InetAddress address = addresses[i];
             final boolean last = i == addresses.length - 1;
@@ -138,9 +142,9 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
             if (this.log.isDebugEnabled()) {
                 this.log.debug("Connecting to " + remoteAddress);
             }
+
             try {
-                sock = sf.connectSocket(
-                        connectTimeout, sock, host, remoteAddress, localAddress, context);
+                sock = sf.connectSocket(connectTimeout, sock, host, remoteAddress, localAddress, context);
                 conn.bind(sock);
                 if (this.log.isDebugEnabled()) {
                     this.log.debug("Connection established " + conn);
@@ -162,6 +166,7 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
                     throw ex;
                 }
             }
+
             if (this.log.isDebugEnabled()) {
                 this.log.debug("Connect to " + remoteAddress + " timed out. " +
                         "Connection will be retried using another IP address");

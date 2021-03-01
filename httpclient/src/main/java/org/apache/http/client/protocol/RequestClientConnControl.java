@@ -55,6 +55,9 @@ public class RequestClientConnControl implements HttpRequestInterceptor {
 
     private static final String PROXY_CONN_DIRECTIVE = "Proxy-Connection";
 
+    /**
+     * Default constructor.
+     */
     public RequestClientConnControl() {
         super();
     }

@@ -58,10 +58,16 @@ public class HttpOptions extends HttpRequestBase {
 
     public final static String METHOD_NAME = "OPTIONS";
 
+    /**
+     * constructor
+     */
     public HttpOptions() {
         super();
     }
 
+    /**
+     * constructor
+     */
     public HttpOptions(final URI uri) {
         super();
         setURI(uri);

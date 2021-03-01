@@ -51,10 +51,16 @@ public class HttpTrace extends HttpRequestBase {
 
     public final static String METHOD_NAME = "TRACE";
 
+    /**
+     * constructor
+     */
     public HttpTrace() {
         super();
     }
 
+    /**
+     * constructor
+     */
     public HttpTrace(final URI uri) {
         super();
         setURI(uri);

@@ -82,15 +82,17 @@ public class DefaultRedirectStrategy implements RedirectStrategy {
     @Deprecated
     public static final String REDIRECT_LOCATIONS = "http.protocol.redirect-locations";
 
+    //
     public static final DefaultRedirectStrategy INSTANCE = new DefaultRedirectStrategy();
 
+    // 支持重定向的方法 GET  HEAD
     private final String[] redirectMethods;
 
+    /**
+     * default construcrot
+     */
     public DefaultRedirectStrategy() {
-        this(new String[] {
-            HttpGet.METHOD_NAME,
-            HttpHead.METHOD_NAME
-        });
+        this(new String[] {HttpGet.METHOD_NAME, HttpHead.METHOD_NAME});
     }
 
     /**
@@ -111,6 +113,7 @@ public class DefaultRedirectStrategy implements RedirectStrategy {
             final HttpRequest request,
             final HttpResponse response,
             final HttpContext context) throws ProtocolException {
+
         Args.notNull(request, "HTTP request");
         Args.notNull(response, "HTTP response");
 
@@ -135,6 +138,7 @@ public class DefaultRedirectStrategy implements RedirectStrategy {
             final HttpRequest request,
             final HttpResponse response,
             final HttpContext context) throws ProtocolException {
+
         Args.notNull(request, "HTTP request");
         Args.notNull(response, "HTTP response");
         Args.notNull(context, "HTTP context");
@@ -146,9 +150,9 @@ public class DefaultRedirectStrategy implements RedirectStrategy {
         if (locationHeader == null) {
             // got a redirect response, but no location header
             throw new ProtocolException(
-                    "Received redirect response " + response.getStatusLine()
-                    + " but no location header");
+                    "Received redirect response " + response.getStatusLine() + " but no location header");
         }
+
         final String location = locationHeader.getValue();
         if (this.log.isDebugEnabled()) {
             this.log.debug("Redirect requested to location '" + location + "'");
@@ -167,8 +171,7 @@ public class DefaultRedirectStrategy implements RedirectStrategy {
             // Location       = "Location" ":" absoluteURI
             if (!uri.isAbsolute()) {
                 if (!config.isRelativeRedirectsAllowed()) {
-                    throw new ProtocolException("Relative redirect location '"
-                            + uri + "' not allowed");
+                    throw new ProtocolException("Relative redirect location '" + uri + "' not allowed");
                 }
                 // Adjust location URI
                 final HttpHost target = clientContext.getTargetHost();

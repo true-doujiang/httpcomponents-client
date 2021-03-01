@@ -58,6 +58,9 @@ public abstract class CloseableHttpClient implements HttpClient, Closeable {
 
     private final Log log = LogFactory.getLog(getClass());
 
+    /**
+     * 抽象方法 有具体子类实现
+     */
     protected abstract CloseableHttpResponse doExecute(HttpHost target, HttpRequest request,
             HttpContext context) throws IOException, ClientProtocolException;
 
@@ -80,7 +83,8 @@ public abstract class CloseableHttpClient implements HttpClient, Closeable {
             final HttpUriRequest request,
             final HttpContext context) throws IOException, ClientProtocolException {
         Args.notNull(request, "HTTP request");
-        return doExecute(determineTarget(request), request, context);
+        HttpHost httpHost = determineTarget(request);
+        return doExecute(httpHost, request, context);
     }
 
     private static HttpHost determineTarget(final HttpUriRequest request) throws ClientProtocolException {
@@ -92,8 +96,7 @@ public abstract class CloseableHttpClient implements HttpClient, Closeable {
         if (requestURI.isAbsolute()) {
             target = URIUtils.extractHost(requestURI);
             if (target == null) {
-                throw new ClientProtocolException("URI does not specify a valid host name: "
-                        + requestURI);
+                throw new ClientProtocolException("URI does not specify a valid host name: " + requestURI);
             }
         }
         return target;
@@ -216,6 +219,7 @@ public abstract class CloseableHttpClient implements HttpClient, Closeable {
     public <T> T execute(final HttpHost target, final HttpRequest request,
             final ResponseHandler<? extends T> responseHandler, final HttpContext context)
             throws IOException, ClientProtocolException {
+
         Args.notNull(responseHandler, "Response handler");
 
         final CloseableHttpResponse response = execute(target, request, context);

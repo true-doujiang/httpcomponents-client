@@ -50,8 +50,11 @@ class ConnectionHolder implements ConnectionReleaseTrigger, Cancellable, Closeab
 
     private final Log log;
 
+    // http连接池
     private final HttpClientConnectionManager manager;
+    //
     private final HttpClientConnection managedConn;
+
     private final AtomicBoolean released;
     private volatile boolean reusable;
     private volatile Object state;

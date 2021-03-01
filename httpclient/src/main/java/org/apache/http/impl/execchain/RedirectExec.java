@@ -74,6 +74,9 @@ public class RedirectExec implements ClientExecChain {
     private final RedirectStrategy redirectStrategy;
     private final HttpRoutePlanner routePlanner;
 
+    /**
+     * default constructor
+     */
     public RedirectExec(
             final ClientExecChain requestExecutor,
             final HttpRoutePlanner routePlanner,
@@ -87,12 +90,16 @@ public class RedirectExec implements ClientExecChain {
         this.redirectStrategy = redirectStrategy;
     }
 
+    /**
+     *
+     */
     @Override
     public CloseableHttpResponse execute(
             final HttpRoute route,
             final HttpRequestWrapper request,
             final HttpClientContext context,
             final HttpExecutionAware execAware) throws IOException, HttpException {
+
         Args.notNull(route, "HTTP route");
         Args.notNull(request, "HTTP request");
         Args.notNull(context, "HTTP context");
@@ -107,24 +114,29 @@ public class RedirectExec implements ClientExecChain {
         HttpRoute currentRoute = route;
         HttpRequestWrapper currentRequest = request;
         for (int redirectCount = 0;;) {
-            final CloseableHttpResponse response = requestExecutor.execute(
-                    currentRoute, currentRequest, context, execAware);
+
+            final CloseableHttpResponse response =
+                    requestExecutor.execute(currentRoute, currentRequest, context, execAware);
+
             try {
+                // 判断是否需要重定向, 不需要else中直接返回response
                 if (config.isRedirectsEnabled() &&
                         this.redirectStrategy.isRedirected(currentRequest.getOriginal(), response, context)) {
+
                     if (!RequestEntityProxy.isRepeatable(currentRequest)) {
                         if (log.isDebugEnabled()) {
                             log.debug("Cannot redirect non-repeatable request");
                         }
                         return response;
                     }
+
                     if (redirectCount >= maxRedirects) {
                         throw new RedirectException("Maximum redirects ("+ maxRedirects + ") exceeded");
                     }
                     redirectCount++;
 
-                    final HttpRequest redirect = this.redirectStrategy.getRedirect(
-                            currentRequest.getOriginal(), response, context);
+                    final HttpRequest redirect =
+                            this.redirectStrategy.getRedirect(currentRequest.getOriginal(), response, context);
                     if (!redirect.headerIterator().hasNext()) {
                         final HttpRequest original = request.getOriginal();
                         redirect.setHeaders(original.getAllHeaders());
@@ -138,8 +150,7 @@ public class RedirectExec implements ClientExecChain {
                     final URI uri = currentRequest.getURI();
                     final HttpHost newTarget = URIUtils.extractHost(uri);
                     if (newTarget == null) {
-                        throw new ProtocolException("Redirect URI does not specify a valid host name: " +
-                                uri);
+                        throw new ProtocolException("Redirect URI does not specify a valid host name: " + uri);
                     }
 
                     // Reset virtual host and auth states if redirecting to another host
@@ -163,6 +174,7 @@ public class RedirectExec implements ClientExecChain {
                     EntityUtils.consume(response.getEntity());
                     response.close();
                 } else {
+                    // 不需要重定向 直接返回response
                     return response;
                 }
             } catch (final RuntimeException ex) {

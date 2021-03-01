@@ -40,6 +40,9 @@ class LoggingOutputStream extends OutputStream {
     private final OutputStream out;
     private final Wire wire;
 
+    /**
+     * constructor
+     */
     public LoggingOutputStream(final OutputStream out, final Wire wire) {
         super();
         this.out = out;

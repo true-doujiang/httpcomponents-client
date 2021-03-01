@@ -48,10 +48,14 @@ class CPoolProxy implements ManagedHttpClientConnection, HttpContext {
 
     private volatile CPoolEntry poolEntry;
 
+    /**
+     * constructor
+     */
     CPoolProxy(final CPoolEntry entry) {
         super();
         this.poolEntry = entry;
     }
+
 
     CPoolEntry getPoolEntry() {
         return this.poolEntry;
@@ -63,6 +67,7 @@ class CPoolProxy implements ManagedHttpClientConnection, HttpContext {
         return local;
     }
 
+    //
     ManagedHttpClientConnection getConnection() {
         final CPoolEntry local = this.poolEntry;
         if (local == null) {
@@ -71,6 +76,7 @@ class CPoolProxy implements ManagedHttpClientConnection, HttpContext {
         return local.getConnection();
     }
 
+    //
     ManagedHttpClientConnection getValidConnection() {
         final ManagedHttpClientConnection conn = getConnection();
         if (conn == null) {
@@ -109,87 +115,111 @@ class CPoolProxy implements ManagedHttpClientConnection, HttpContext {
 
     @Override
     public void setSocketTimeout(final int timeout) {
-        getValidConnection().setSocketTimeout(timeout);
+        ManagedHttpClientConnection managedHttpClientConnection = getValidConnection();
+        managedHttpClientConnection.setSocketTimeout(timeout);
     }
 
     @Override
     public int getSocketTimeout() {
-        return getValidConnection().getSocketTimeout();
+        ManagedHttpClientConnection managedHttpClientConnection = getValidConnection();
+        return managedHttpClientConnection.getSocketTimeout();
     }
 
     @Override
     public String getId() {
-        return getValidConnection().getId();
+        ManagedHttpClientConnection managedHttpClientConnection = getValidConnection();
+        return managedHttpClientConnection.getId();
     }
 
+    /**
+     * 进行tcp三次握手
+     */
     @Override
     public void bind(final Socket socket) throws IOException {
-        getValidConnection().bind(socket);
+        ManagedHttpClientConnection managedHttpClientConnection = getValidConnection();
+        managedHttpClientConnection.bind(socket);
     }
 
     @Override
     public Socket getSocket() {
-        return getValidConnection().getSocket();
+        ManagedHttpClientConnection managedHttpClientConnection = getValidConnection();
+        return managedHttpClientConnection.getSocket();
     }
 
     @Override
     public SSLSession getSSLSession() {
-        return getValidConnection().getSSLSession();
+        ManagedHttpClientConnection managedHttpClientConnection = getValidConnection();
+        return managedHttpClientConnection.getSSLSession();
     }
 
     @Override
     public boolean isResponseAvailable(final int timeout) throws IOException {
-        return getValidConnection().isResponseAvailable(timeout);
+        ManagedHttpClientConnection managedHttpClientConnection = getValidConnection();
+        return managedHttpClientConnection.isResponseAvailable(timeout);
     }
 
+    /**
+     *
+     */
     @Override
     public void sendRequestHeader(final HttpRequest request) throws HttpException, IOException {
-        getValidConnection().sendRequestHeader(request);
+        // DefaultBHttpClientConnection
+        ManagedHttpClientConnection managedHttpClientConnection = getValidConnection();
+        managedHttpClientConnection.sendRequestHeader(request);
     }
 
     @Override
     public void sendRequestEntity(final HttpEntityEnclosingRequest request) throws HttpException, IOException {
-        getValidConnection().sendRequestEntity(request);
+        ManagedHttpClientConnection managedHttpClientConnection = getValidConnection();
+        managedHttpClientConnection.sendRequestEntity(request);
     }
 
     @Override
     public HttpResponse receiveResponseHeader() throws HttpException, IOException {
-        return getValidConnection().receiveResponseHeader();
+        ManagedHttpClientConnection managedHttpClientConnection = getValidConnection();
+        return managedHttpClientConnection.receiveResponseHeader();
     }
 
     @Override
     public void receiveResponseEntity(final HttpResponse response) throws HttpException, IOException {
-        getValidConnection().receiveResponseEntity(response);
+        ManagedHttpClientConnection managedHttpClientConnection = getValidConnection();
+        managedHttpClientConnection.receiveResponseEntity(response);
     }
 
     @Override
     public void flush() throws IOException {
-        getValidConnection().flush();
+        ManagedHttpClientConnection managedHttpClientConnection = getValidConnection();
+        managedHttpClientConnection.flush();
     }
 
     @Override
     public HttpConnectionMetrics getMetrics() {
-        return getValidConnection().getMetrics();
+        ManagedHttpClientConnection managedHttpClientConnection = getValidConnection();
+        return managedHttpClientConnection.getMetrics();
     }
 
     @Override
     public InetAddress getLocalAddress() {
-        return getValidConnection().getLocalAddress();
+        ManagedHttpClientConnection managedHttpClientConnection = getValidConnection();
+        return managedHttpClientConnection.getLocalAddress();
     }
 
     @Override
     public int getLocalPort() {
-        return getValidConnection().getLocalPort();
+        ManagedHttpClientConnection managedHttpClientConnection = getValidConnection();
+        return managedHttpClientConnection.getLocalPort();
     }
 
     @Override
     public InetAddress getRemoteAddress() {
-        return getValidConnection().getRemoteAddress();
+        ManagedHttpClientConnection managedHttpClientConnection = getValidConnection();
+        return managedHttpClientConnection.getRemoteAddress();
     }
 
     @Override
     public int getRemotePort() {
-        return getValidConnection().getRemotePort();
+        ManagedHttpClientConnection managedHttpClientConnection = getValidConnection();
+        return managedHttpClientConnection.getRemotePort();
     }
 
     @Override
@@ -225,6 +255,9 @@ class CPoolProxy implements ManagedHttpClientConnection, HttpContext {
         return sb.toString();
     }
 
+    /**
+     *
+     */
     public static HttpClientConnection newProxy(final CPoolEntry poolEntry) {
         return new CPoolProxy(poolEntry);
     }

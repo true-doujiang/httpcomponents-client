@@ -69,6 +69,9 @@ public class RequestAddCookies implements HttpRequestInterceptor {
 
     private final Log log = LogFactory.getLog(getClass());
 
+    /**
+     * constructor
+     */
     public RequestAddCookies() {
         super();
     }

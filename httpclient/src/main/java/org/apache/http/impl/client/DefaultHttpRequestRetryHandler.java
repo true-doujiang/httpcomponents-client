@@ -56,14 +56,16 @@ import org.apache.http.util.Args;
 @Contract(threading = ThreadingBehavior.IMMUTABLE)
 public class DefaultHttpRequestRetryHandler implements HttpRequestRetryHandler {
 
+    //
     public static final DefaultHttpRequestRetryHandler INSTANCE = new DefaultHttpRequestRetryHandler();
 
-    /** the number of times a method will be retried */
+    /** the number of times a method will be retried  默认重试3次 */
     private final int retryCount;
 
     /** Whether or not methods that have successfully sent their request will be retried */
     private final boolean requestSentRetryEnabled;
 
+    // 指定哪些IO异常不进行重试
     private final Set<Class<? extends IOException>> nonRetriableClasses;
 
     /**
@@ -98,14 +100,12 @@ public class DefaultHttpRequestRetryHandler implements HttpRequestRetryHandler {
      * </ul>
      * @param retryCount how many times to retry; 0 means no retries
      * @param requestSentRetryEnabled true if it's OK to retry non-idempotent requests that have been sent
+     *
      */
     @SuppressWarnings("unchecked")
     public DefaultHttpRequestRetryHandler(final int retryCount, final boolean requestSentRetryEnabled) {
-        this(retryCount, requestSentRetryEnabled, Arrays.asList(
-                InterruptedIOException.class,
-                UnknownHostException.class,
-                ConnectException.class,
-                SSLException.class));
+        this(retryCount, requestSentRetryEnabled,
+                Arrays.asList(InterruptedIOException.class, UnknownHostException.class, ConnectException.class, SSLException.class));
     }
 
     /**
@@ -117,10 +117,13 @@ public class DefaultHttpRequestRetryHandler implements HttpRequestRetryHandler {
      * <li>ConnectException</li>
      * <li>SSLException</li>
      * </ul>
+     *
+     * default constructor  默认重试3次
      */
     public DefaultHttpRequestRetryHandler() {
         this(3, false);
     }
+
     /**
      * Used {@code retryCount} and {@code requestSentRetryEnabled} to determine
      * if the given method should be retried.
@@ -130,15 +133,19 @@ public class DefaultHttpRequestRetryHandler implements HttpRequestRetryHandler {
             final IOException exception,
             final int executionCount,
             final HttpContext context) {
+
         Args.notNull(exception, "Exception parameter");
         Args.notNull(context, "HTTP context");
+
         if (executionCount > this.retryCount) {
             // Do not retry if over max retry count
             return false;
         }
+
         if (this.nonRetriableClasses.contains(exception.getClass())) {
             return false;
         }
+
         for (final Class<? extends IOException> rejectException : this.nonRetriableClasses) {
             if (rejectException.isInstance(exception)) {
                 return false;
@@ -161,6 +168,7 @@ public class DefaultHttpRequestRetryHandler implements HttpRequestRetryHandler {
             // if it's OK to retry methods that have been sent
             return true;
         }
+
         // otherwise do not retry
         return false;
     }

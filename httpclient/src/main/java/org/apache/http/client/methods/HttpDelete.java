@@ -48,11 +48,16 @@ public class HttpDelete extends HttpRequestBase {
 
     public final static String METHOD_NAME = "DELETE";
 
-
+    /**
+     * constructor
+     */
     public HttpDelete() {
         super();
     }
 
+    /**
+     * constructor
+     */
     public HttpDelete(final URI uri) {
         super();
         setURI(uri);

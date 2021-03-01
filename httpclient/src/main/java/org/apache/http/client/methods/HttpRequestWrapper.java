@@ -51,13 +51,22 @@ import org.apache.http.util.Args;
 @SuppressWarnings("deprecation")
 public class HttpRequestWrapper extends AbstractHttpMessage implements HttpUriRequest {
 
+    //
     private final HttpRequest original;
+    //
     private final HttpHost target;
+    //
     private final String method;
+    //
     private RequestLine requestLine;
+    //
     private ProtocolVersion version;
+    //
     private URI uri;
 
+    /**
+     * default constructor
+     */
     private HttpRequestWrapper(final HttpRequest request, final HttpHost target) {
         super();
         this.original = Args.notNull(request, "HTTP request");
@@ -69,7 +78,8 @@ public class HttpRequestWrapper extends AbstractHttpMessage implements HttpUriRe
         } else {
             this.uri = null;
         }
-        setHeaders(request.getAllHeaders());
+        Header[] allHeaders = request.getAllHeaders();
+        setHeaders(allHeaders);
     }
 
     @Override
@@ -140,11 +150,18 @@ public class HttpRequestWrapper extends AbstractHttpMessage implements HttpUriRe
         return getRequestLine() + " " + this.headergroup;
     }
 
+    /**
+     * 内部类  继承外部类
+     */
     static class HttpEntityEnclosingRequestWrapper extends HttpRequestWrapper
         implements HttpEntityEnclosingRequest {
 
+        //
         private HttpEntity entity;
 
+        /**
+         * 构造器
+         */
         HttpEntityEnclosingRequestWrapper(final HttpEntityEnclosingRequest request, final HttpHost target) {
             super(request, target);
             this.entity = request.getEntity();
@@ -189,10 +206,15 @@ public class HttpRequestWrapper extends AbstractHttpMessage implements HttpUriRe
      */
     public static HttpRequestWrapper wrap(final HttpRequest request, final HttpHost target) {
         Args.notNull(request, "HTTP request");
-        return request instanceof HttpEntityEnclosingRequest
-                        ? new HttpEntityEnclosingRequestWrapper(
-                                        (HttpEntityEnclosingRequest) request, target)
-                        : new HttpRequestWrapper(request, target);
+        if (request instanceof HttpEntityEnclosingRequest) {
+            return  new HttpEntityEnclosingRequestWrapper((HttpEntityEnclosingRequest) request, target);
+        } else {
+            return new HttpRequestWrapper(request, target);
+        }
+//        return request instanceof HttpEntityEnclosingRequest
+//                        ? new HttpEntityEnclosingRequestWrapper(
+//                                        (HttpEntityEnclosingRequest) request, target)
+//                        : new HttpRequestWrapper(request, target);
     }
 
     /**

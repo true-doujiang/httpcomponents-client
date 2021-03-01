@@ -90,9 +90,11 @@ public class MainClientExec implements ClientExecChain {
 
     private final Log log = LogFactory.getLog(getClass());
 
-    //
+    // core模块
     private final HttpRequestExecutor requestExecutor;
+    // http连接池
     private final HttpClientConnectionManager connManager;
+
     private final ConnectionReuseStrategy reuseStrategy;
     private final ConnectionKeepAliveStrategy keepAliveStrategy;
     private final HttpProcessor proxyHttpProcessor;
@@ -179,6 +181,7 @@ public class MainClientExec implements ClientExecChain {
 
         Object userToken = context.getUserToken();
 
+        //
         final ConnectionRequest connRequest = connManager.requestConnection(route, userToken);
         if (execAware != null) {
             if (execAware.isAborted()) {
@@ -190,8 +193,10 @@ public class MainClientExec implements ClientExecChain {
 
         final RequestConfig config = context.getRequestConfig();
 
+        // 从连接池中获取一个http conn
         final HttpClientConnection managedConn;
         try {
+            // 用户代码中配置的超时时间
             final int timeout = config.getConnectionRequestTimeout();
             managedConn = connRequest.get(timeout > 0 ? timeout : 0, TimeUnit.MILLISECONDS);
         } catch(final InterruptedException interrupted) {
@@ -205,6 +210,7 @@ public class MainClientExec implements ClientExecChain {
             throw new RequestAbortedException("Request execution failed", cause);
         }
 
+        // 把获取到的conn 放到context中
         context.setAttribute(HttpCoreContext.HTTP_CONNECTION, managedConn);
 
         if (config.isStaleConnectionCheckEnabled()) {
@@ -218,7 +224,9 @@ public class MainClientExec implements ClientExecChain {
             }
         }
 
-        final ConnectionHolder connHolder = new ConnectionHolder(this.log, this.connManager, managedConn);
+        final ConnectionHolder connHolder =
+                new ConnectionHolder(this.log, this.connManager, managedConn);
+
         try {
             if (execAware != null) {
                 execAware.setCancellable(connHolder);
@@ -240,6 +248,7 @@ public class MainClientExec implements ClientExecChain {
                 if (!managedConn.isOpen()) {
                     this.log.debug("Opening connection " + route);
                     try {
+                        //
                         establishRoute(proxyAuthState, managedConn, route, request, context);
                     } catch (final TunnelRefusedException ex) {
                         if (this.log.isDebugEnabled()) {
@@ -249,6 +258,7 @@ public class MainClientExec implements ClientExecChain {
                         break;
                     }
                 }
+
                 final int timeout = config.getSocketTimeout();
                 if (timeout >= 0) {
                     managedConn.setSocketTimeout(timeout);
@@ -268,6 +278,7 @@ public class MainClientExec implements ClientExecChain {
                     }
                     this.authenticator.generateAuthResponse(request, targetAuthState, context);
                 }
+
                 if (!request.containsHeader(AUTH.PROXY_AUTH_RESP) && !route.isTunnelled()) {
                     if (this.log.isDebugEnabled()) {
                         this.log.debug("Proxy auth state: " + proxyAuthState.getState());
@@ -275,8 +286,10 @@ public class MainClientExec implements ClientExecChain {
                     this.authenticator.generateAuthResponse(request, proxyAuthState, context);
                 }
 
+                // 把获取到的http request 放到context中
                 context.setAttribute(HttpCoreContext.HTTP_REQUEST, request);
 
+                // HttpRequestExecutor
                 response = requestExecutor.execute(request, managedConn, context);
 
                 // The connection is in or can be brought to a re-usable state.
@@ -316,6 +329,7 @@ public class MainClientExec implements ClientExecChain {
                             targetAuthState.reset();
                         }
                     }
+
                     // discard previous auth headers
                     final HttpRequest original = request.getOriginal();
                     if (!original.containsHeader(AUTH.WWW_AUTH_RESP)) {
@@ -344,7 +358,9 @@ public class MainClientExec implements ClientExecChain {
                 connHolder.releaseConnection();
                 return new HttpResponseProxy(response, null);
             }
-            return new HttpResponseProxy(response, connHolder);
+
+            HttpResponseProxy httpResponseProxy = new HttpResponseProxy(response, connHolder);
+            return httpResponseProxy;
         } catch (final ConnectionShutdownException ex) {
             final InterruptedIOException ioex = new InterruptedIOException(
                     "Connection has been shut down");

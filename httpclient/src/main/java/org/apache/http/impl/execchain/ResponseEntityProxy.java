@@ -45,8 +45,12 @@ import org.apache.http.entity.HttpEntityWrapper;
  */
 class ResponseEntityProxy extends HttpEntityWrapper implements EofSensorWatcher {
 
+    //
     private final ConnectionHolder connHolder;
 
+    /**
+     *
+     */
     public static void enchance(final HttpResponse response, final ConnectionHolder connHolder) {
         final HttpEntity entity = response.getEntity();
         if (entity != null && entity.isStreaming() && connHolder != null) {
@@ -54,6 +58,9 @@ class ResponseEntityProxy extends HttpEntityWrapper implements EofSensorWatcher 
         }
     }
 
+    /**
+     * default constructor
+     */
     ResponseEntityProxy(final HttpEntity entity, final ConnectionHolder connHolder) {
         super(entity);
         this.connHolder = connHolder;

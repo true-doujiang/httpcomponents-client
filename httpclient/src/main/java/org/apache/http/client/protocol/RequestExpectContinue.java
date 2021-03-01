@@ -56,6 +56,9 @@ import org.apache.http.util.Args;
 @Contract(threading = ThreadingBehavior.IMMUTABLE)
 public class RequestExpectContinue implements HttpRequestInterceptor {
 
+    /**
+     * Default constructor.
+     */
     public RequestExpectContinue() {
         super();
     }
@@ -70,8 +73,7 @@ public class RequestExpectContinue implements HttpRequestInterceptor {
                 final ProtocolVersion ver = request.getRequestLine().getProtocolVersion();
                 final HttpEntity entity = ((HttpEntityEnclosingRequest)request).getEntity();
                 // Do not send the expect header if request body is known to be empty
-                if (entity != null
-                        && entity.getContentLength() != 0 && !ver.lessEquals(HttpVersion.HTTP_1_0)) {
+                if (entity != null && entity.getContentLength() != 0 && !ver.lessEquals(HttpVersion.HTTP_1_0)) {
                     final HttpClientContext clientContext = HttpClientContext.adapt(context);
                     final RequestConfig config = clientContext.getRequestConfig();
                     if (config.isExpectContinueEnabled()) {

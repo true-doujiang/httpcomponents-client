@@ -86,9 +86,13 @@ class InternalHttpClient extends CloseableHttpClient implements Configurable {
     private final Lookup<AuthSchemeProvider> authSchemeRegistry;
     private final CookieStore cookieStore;
     private final CredentialsProvider credentialsProvider;
+    //
     private final RequestConfig defaultConfig;
     private final List<Closeable> closeables;
 
+    /**
+     * default constructor
+     */
     public InternalHttpClient(
             final ClientExecChain execChain,
             final HttpClientConnectionManager connManager,
@@ -114,6 +118,9 @@ class InternalHttpClient extends CloseableHttpClient implements Configurable {
         this.closeables = closeables;
     }
 
+    /**
+     *
+     */
     private HttpRoute determineRoute(
             final HttpHost target,
             final HttpRequest request,
@@ -125,6 +132,10 @@ class InternalHttpClient extends CloseableHttpClient implements Configurable {
         return this.routePlanner.determineRoute(host, request, context);
     }
 
+
+    /**
+     *
+     */
     private void setupContext(final HttpClientContext context) {
         if (context.getAttribute(HttpClientContext.TARGET_AUTH_STATE) == null) {
             context.setAttribute(HttpClientContext.TARGET_AUTH_STATE, new AuthState());
@@ -149,24 +160,34 @@ class InternalHttpClient extends CloseableHttpClient implements Configurable {
         }
     }
 
+    /**
+     *
+     */
     @Override
     protected CloseableHttpResponse doExecute(
             final HttpHost target,
             final HttpRequest request,
             final HttpContext context) throws IOException, ClientProtocolException {
         Args.notNull(request, "HTTP request");
+
+        //
         HttpExecutionAware execAware = null;
         if (request instanceof HttpExecutionAware) {
             execAware = (HttpExecutionAware) request;
         }
+
         try {
+            //
             final HttpRequestWrapper wrapper = HttpRequestWrapper.wrap(request, target);
-            final HttpClientContext localcontext = HttpClientContext.adapt(
-                    context != null ? context : new BasicHttpContext());
+
+            HttpContext httpContext = context != null ? context : new BasicHttpContext();
+            final HttpClientContext httpClientContext = HttpClientContext.adapt(httpContext);
+
             RequestConfig config = null;
             if (request instanceof Configurable) {
                 config = ((Configurable) request).getConfig();
             }
+
             if (config == null) {
                 final HttpParams params = request.getParams();
                 if (params instanceof HttpParamsNames) {
@@ -177,12 +198,16 @@ class InternalHttpClient extends CloseableHttpClient implements Configurable {
                     config = HttpClientParamConfig.getRequestConfig(params, this.defaultConfig);
                 }
             }
+
             if (config != null) {
-                localcontext.setRequestConfig(config);
+                httpClientContext.setRequestConfig(config);
             }
-            setupContext(localcontext);
-            final HttpRoute route = determineRoute(target, wrapper, localcontext);
-            return this.execChain.execute(route, wrapper, localcontext, execAware);
+
+            // 给httpClientContext底册的map中添加
+            setupContext(httpClientContext);
+            final HttpRoute route = determineRoute(target, wrapper, httpClientContext);
+
+            return this.execChain.execute(route, wrapper, httpClientContext, execAware);
         } catch (final HttpException httpException) {
             throw new ClientProtocolException(httpException);
         }

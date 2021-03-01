@@ -52,10 +52,16 @@ public class HttpHead extends HttpRequestBase {
 
     public final static String METHOD_NAME = "HEAD";
 
+    /**
+     * constructor
+     */
     public HttpHead() {
         super();
     }
 
+    /**
+     * constructor
+     */
     public HttpHead(final URI uri) {
         super();
         setURI(uri);

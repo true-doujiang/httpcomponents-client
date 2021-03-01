@@ -57,6 +57,10 @@ public class DefaultServiceUnavailableRetryStrategy implements ServiceUnavailabl
      */
     private final long retryInterval;
 
+
+    /**
+     *
+     */
     public DefaultServiceUnavailableRetryStrategy(final int maxRetries, final int retryInterval) {
         super();
         Args.positive(maxRetries, "Max retries");
@@ -65,10 +69,16 @@ public class DefaultServiceUnavailableRetryStrategy implements ServiceUnavailabl
         this.retryInterval = retryInterval;
     }
 
+    /**
+     * default constructor
+     */
     public DefaultServiceUnavailableRetryStrategy() {
         this(1, 1000);
     }
 
+    /**
+     * 没有达到最大重试 && status==503 则返回true
+     */
     @Override
     public boolean retryRequest(final HttpResponse response, final int executionCount, final HttpContext context) {
         return executionCount <= maxRetries &&

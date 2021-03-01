@@ -60,6 +60,9 @@ public class RequestAuthCache implements HttpRequestInterceptor {
 
     private final Log log = LogFactory.getLog(getClass());
 
+    /**
+     * Default constructor.
+     */
     public RequestAuthCache() {
         super();
     }
@@ -126,6 +129,7 @@ public class RequestAuthCache implements HttpRequestInterceptor {
             final AuthScheme authScheme,
             final AuthState authState,
             final CredentialsProvider credsProvider) {
+
         final String schemeName = authScheme.getSchemeName();
         if (this.log.isDebugEnabled()) {
             this.log.debug("Re-using cached '" + schemeName + "' auth scheme for " + host);

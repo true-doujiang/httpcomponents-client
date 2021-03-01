@@ -51,8 +51,10 @@ class CPool extends AbstractConnPool<HttpRoute, ManagedHttpClientConnection, CPo
     private final long timeToLive;
     private final TimeUnit timeUnit;
 
-    public CPool(
-            final ConnFactory<HttpRoute, ManagedHttpClientConnection> connFactory,
+    /**
+     * default constructor
+     */
+    public CPool(final ConnFactory<HttpRoute, ManagedHttpClientConnection> connFactory,
             final int defaultMaxPerRoute, final int maxTotal,
             final long timeToLive, final TimeUnit timeUnit) {
         super(connFactory, defaultMaxPerRoute, maxTotal);
@@ -60,6 +62,9 @@ class CPool extends AbstractConnPool<HttpRoute, ManagedHttpClientConnection, CPo
         this.timeUnit = timeUnit;
     }
 
+    /**
+     *
+     */
     @Override
     protected CPoolEntry createEntry(final HttpRoute route, final ManagedHttpClientConnection conn) {
         final String id = Long.toString(COUNTER.getAndIncrement());

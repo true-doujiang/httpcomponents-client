@@ -47,9 +47,15 @@ import org.apache.http.params.HttpParams;
  */
 class HttpResponseProxy implements CloseableHttpResponse {
 
+    //
     private final HttpResponse original;
+
     private final ConnectionHolder connHolder;
 
+
+    /**
+     * constructor
+     */
     public HttpResponseProxy(final HttpResponse original, final ConnectionHolder connHolder) {
         this.original = original;
         this.connHolder = connHolder;

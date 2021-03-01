@@ -41,6 +41,7 @@ import org.apache.http.util.Args;
 @Contract(threading = ThreadingBehavior.IMMUTABLE)
 public class DefaultSchemePortResolver implements SchemePortResolver {
 
+    //
     public static final DefaultSchemePortResolver INSTANCE = new DefaultSchemePortResolver();
 
     @Override

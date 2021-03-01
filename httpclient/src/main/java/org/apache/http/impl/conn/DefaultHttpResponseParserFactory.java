@@ -52,6 +52,9 @@ public class DefaultHttpResponseParserFactory implements HttpMessageParserFactor
     private final LineParser lineParser;
     private final HttpResponseFactory responseFactory;
 
+    /**
+     * constructor
+     */
     public DefaultHttpResponseParserFactory(
             final LineParser lineParser,
             final HttpResponseFactory responseFactory) {

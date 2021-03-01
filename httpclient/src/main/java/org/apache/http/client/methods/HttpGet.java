@@ -49,6 +49,9 @@ public class HttpGet extends HttpRequestBase {
 
     public final static String METHOD_NAME = "GET";
 
+    /**
+     * constructor
+     */
     public HttpGet() {
         super();
     }

@@ -62,8 +62,12 @@ public class ServiceUnavailableRetryExec implements ClientExecChain {
     private final Log log = LogFactory.getLog(getClass());
 
     private final ClientExecChain requestExecutor;
+    // 服务不可用处理策略
     private final ServiceUnavailableRetryStrategy retryStrategy;
 
+    /**
+     *
+     */
     public ServiceUnavailableRetryExec(
             final ClientExecChain requestExecutor,
             final ServiceUnavailableRetryStrategy retryStrategy) {
@@ -80,26 +84,33 @@ public class ServiceUnavailableRetryExec implements ClientExecChain {
             final HttpRequestWrapper request,
             final HttpClientContext context,
             final HttpExecutionAware execAware) throws IOException, HttpException {
+
         final Header[] origheaders = request.getAllHeaders();
+
         for (int c = 1;; c++) {
-            final CloseableHttpResponse response = this.requestExecutor.execute(
-                    route, request, context, execAware);
+            final CloseableHttpResponse response = this.requestExecutor.execute(route, request, context, execAware);
             try {
-                if (this.retryStrategy.retryRequest(response, c, context)
-                        && RequestEntityProxy.isRepeatable(request)) {
+                // 没有达到最大重试 && status==503 则返回true
+                if (this.retryStrategy.retryRequest(response, c, context) && RequestEntityProxy.isRepeatable(request)) {
+
                     response.close();
+
                     final long nextInterval = this.retryStrategy.getRetryInterval();
+
                     if (nextInterval > 0) {
                         try {
                             this.log.trace("Wait for " + nextInterval);
+                            // 我搽 sleep
                             Thread.sleep(nextInterval);
                         } catch (final InterruptedException e) {
                             Thread.currentThread().interrupt();
                             throw new InterruptedIOException();
                         }
                     }
+
                     request.setHeaders(origheaders);
                 } else {
+                    // 正常返回响应
                     return response;
                 }
             } catch (final RuntimeException ex) {

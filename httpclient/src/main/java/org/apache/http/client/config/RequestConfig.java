@@ -38,6 +38,8 @@ import org.apache.http.annotation.ThreadingBehavior;
  *  Immutable class encapsulating request configuration items.
  *  The default setting for stale connection checking changed
  *  to false, and the feature was deprecated starting with version 4.4.
+ *
+ *  用户代码配置 超时时间、连接池.....
  */
 @Contract(threading = ThreadingBehavior.IMMUTABLE)
 public class RequestConfig implements Cloneable {
@@ -45,7 +47,9 @@ public class RequestConfig implements Cloneable {
     public static final RequestConfig DEFAULT = new Builder().build();
 
     private final boolean expectContinueEnabled;
+    //
     private final HttpHost proxy;
+    //
     private final InetAddress localAddress;
     private final boolean staleConnectionCheckEnabled;
     private final String cookieSpec;
@@ -54,8 +58,11 @@ public class RequestConfig implements Cloneable {
     private final boolean circularRedirectsAllowed;
     private final int maxRedirects;
     private final boolean authenticationEnabled;
+    //
     private final Collection<String> targetPreferredAuthSchemes;
+    //
     private final Collection<String> proxyPreferredAuthSchemes;
+
     private final int connectionRequestTimeout;
     private final int connectTimeout;
     private final int socketTimeout;
@@ -64,11 +71,15 @@ public class RequestConfig implements Cloneable {
 
     /**
      * Intended for CDI compatibility
-    */
+     * constructor
+     */
     protected RequestConfig() {
         this(false, null, null, false, null, false, false, false, 0, false, null, null, 0, 0, 0, true, true);
     }
 
+    /**
+     * constructor
+     */
     RequestConfig(
             final boolean expectContinueEnabled,
             final HttpHost proxy,

@@ -52,10 +52,16 @@ public class HttpPatch extends HttpEntityEnclosingRequestBase {
 
     public final static String METHOD_NAME = "PATCH";
 
+    /**
+     * constructor
+     */
     public HttpPatch() {
         super();
     }
 
+    /**
+     * constructor
+     */
     public HttpPatch(final URI uri) {
         super();
         setURI(uri);

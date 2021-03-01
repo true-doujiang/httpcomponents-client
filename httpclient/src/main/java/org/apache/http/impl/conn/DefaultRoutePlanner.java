@@ -55,10 +55,13 @@ public class DefaultRoutePlanner implements HttpRoutePlanner {
 
     private final SchemePortResolver schemePortResolver;
 
+    /**
+     * constructor
+     */
     public DefaultRoutePlanner(final SchemePortResolver schemePortResolver) {
         super();
-        this.schemePortResolver = schemePortResolver != null ? schemePortResolver :
-            DefaultSchemePortResolver.INSTANCE;
+        this.schemePortResolver = schemePortResolver != null
+                ? schemePortResolver : DefaultSchemePortResolver.INSTANCE;
     }
 
     @Override
@@ -66,6 +69,7 @@ public class DefaultRoutePlanner implements HttpRoutePlanner {
             final HttpHost host,
             final HttpRequest request,
             final HttpContext context) throws HttpException {
+
         Args.notNull(request, "Request");
         if (host == null) {
             throw new ProtocolException("Target host is not specified");
@@ -91,10 +95,18 @@ public class DefaultRoutePlanner implements HttpRoutePlanner {
         } else {
             target = host;
         }
+
         final boolean secure = target.getSchemeName().equalsIgnoreCase("https");
-        return proxy == null
-                        ? new HttpRoute(target, local, secure)
-                        : new HttpRoute(target, local, proxy, secure);
+
+        if (proxy == null) {
+            return new HttpRoute(target, local, secure);
+        } else {
+            return new HttpRoute(target, local, proxy, secure);
+        }
+
+//        return proxy == null
+//                        ? new HttpRoute(target, local, secure)
+//                        : new HttpRoute(target, local, proxy, secure);
     }
 
     /**

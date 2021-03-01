@@ -49,6 +49,9 @@ class LoggingManagedHttpClientConnection extends DefaultManagedHttpClientConnect
     private final Log headerLog;
     private final Wire wire;
 
+    /**
+     * constructor
+     */
     public LoggingManagedHttpClientConnection(
             final String id,
             final Log log,

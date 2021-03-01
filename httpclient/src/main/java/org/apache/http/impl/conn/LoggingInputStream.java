@@ -40,6 +40,9 @@ class LoggingInputStream extends InputStream {
     private final InputStream in;
     private final Wire wire;
 
+    /**
+     * constructor
+     */
     public LoggingInputStream(final InputStream in, final Wire wire) {
         super();
         this.in = in;

@@ -46,6 +46,8 @@ public abstract class HttpRequestBase extends AbstractExecutionAwareRequest
 
     private ProtocolVersion version;
     private URI uri;
+
+    // 用户代码配置  Configurable接口定义
     private RequestConfig config;
 
     @Override

@@ -37,11 +37,15 @@ import org.apache.http.conn.ConnectionReleaseTrigger;
 import org.apache.http.message.AbstractHttpMessage;
 
 @SuppressWarnings("deprecation")
-public abstract class AbstractExecutionAwareRequest extends AbstractHttpMessage implements
-        HttpExecutionAware, AbortableHttpRequest, Cloneable, HttpRequest {
+public abstract class AbstractExecutionAwareRequest extends AbstractHttpMessage
+        implements HttpExecutionAware, AbortableHttpRequest, Cloneable, HttpRequest {
 
+    //
     private final AtomicMarkableReference<Cancellable> cancellableRef;
 
+    /**
+     * constructor
+     */
     protected AbstractExecutionAwareRequest() {
         super();
         this.cancellableRef = new AtomicMarkableReference<Cancellable>(null, false);

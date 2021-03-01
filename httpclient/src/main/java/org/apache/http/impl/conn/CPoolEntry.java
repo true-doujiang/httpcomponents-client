@@ -47,6 +47,10 @@ class CPoolEntry extends PoolEntry<HttpRoute, ManagedHttpClientConnection> {
     private final Log log;
     private volatile boolean routeComplete;
 
+
+    /**
+     * constructor
+     */
     public CPoolEntry(
             final Log log,
             final String id,

@@ -68,10 +68,7 @@ import org.apache.http.client.protocol.RequestDefaultHeaders;
 import org.apache.http.client.protocol.RequestExpectContinue;
 import org.apache.http.client.protocol.ResponseContentEncoding;
 import org.apache.http.client.protocol.ResponseProcessCookies;
-import org.apache.http.config.ConnectionConfig;
-import org.apache.http.config.Lookup;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.config.SocketConfig;
+import org.apache.http.config.*;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.DnsResolver;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -960,13 +957,16 @@ public class HttpClientBuilder {
             publicSuffixMatcherCopy = PublicSuffixMatcherLoader.getDefault();
         }
 
+        // HttpRequestExecutor core模块
         HttpRequestExecutor requestExecCopy = this.requestExec;
         if (requestExecCopy == null) {
             requestExecCopy = new HttpRequestExecutor();
         }
 
+        // http连接池
         HttpClientConnectionManager connManagerCopy = this.connManager;
         if (connManagerCopy == null) {
+
             LayeredConnectionSocketFactory sslSocketFactoryCopy = this.sslSocketFactory;
             if (sslSocketFactoryCopy == null) {
                 final String[] supportedProtocols = systemProperties ? split(
@@ -992,17 +992,25 @@ public class HttpClientBuilder {
                     }
                 }
             }
+
+            Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                    .register("https", sslSocketFactoryCopy)
+                    .build();
+
+            /*
+             * 创建http conn连接池
+             */
+            TimeUnit timeUnit = connTimeToLiveTimeUnit != null ? connTimeToLiveTimeUnit : TimeUnit.MILLISECONDS;
             @SuppressWarnings("resource")
             final PoolingHttpClientConnectionManager poolingmgr = new PoolingHttpClientConnectionManager(
-                    RegistryBuilder.<ConnectionSocketFactory>create()
-                        .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                        .register("https", sslSocketFactoryCopy)
-                        .build(),
+                    registry,
                     null,
                     null,
                     dnsResolver,
                     connTimeToLive,
-                    connTimeToLiveTimeUnit != null ? connTimeToLiveTimeUnit : TimeUnit.MILLISECONDS);
+                    timeUnit);
+
             if (defaultSocketConfig != null) {
                 poolingmgr.setDefaultSocketConfig(defaultSocketConfig);
             }
@@ -1077,87 +1085,109 @@ public class HttpClientBuilder {
             }
         }
 
+        // 添加请求拦截器
+        RequestTargetHost requestTargetHost = new RequestTargetHost();
+        RequestUserAgent requestUserAgent = new RequestUserAgent(userAgentCopy);
+        // http处理器1  处理代理相关的事
+        ImmutableHttpProcessor proxyHttpProcessor = new ImmutableHttpProcessor(requestTargetHost, requestUserAgent);
 
-        ImmutableHttpProcessor immutableHttpProcessor =
-                new ImmutableHttpProcessor(new RequestTargetHost(), new RequestUserAgent(userAgentCopy));
-
-        // 执行器链
+        // 执行器链  MainClientExec
         ClientExecChain execChain = createMainExec(
                 requestExecCopy,
                 connManagerCopy,
                 reuseStrategyCopy,
                 keepAliveStrategyCopy,
-                immutableHttpProcessor,
+                proxyHttpProcessor,
                 targetAuthStrategyCopy,
                 proxyAuthStrategyCopy,
                 userTokenHandlerCopy);
 
         execChain = decorateMainExec(execChain);
 
+        // http处理器2 ImmutableHttpProcessor  同上呢  并绑定7个请求拦截器  2个响应拦截器
         HttpProcessor httpprocessorCopy = this.httpprocessor;
         if (httpprocessorCopy == null) {
-            final HttpProcessorBuilder b = HttpProcessorBuilder.create();
+            //
+            final HttpProcessorBuilder httpProcessorBuilder = HttpProcessorBuilder.create();
+
             if (requestFirst != null) {
                 for (final HttpRequestInterceptor i: requestFirst) {
-                    b.addFirst(i);
+                    httpProcessorBuilder.addFirst(i);
                 }
             }
+
             if (responseFirst != null) {
                 for (final HttpResponseInterceptor i: responseFirst) {
-                    b.addFirst(i);
+                    httpProcessorBuilder.addFirst(i);
                 }
             }
-            b.addAll(
-                    new RequestDefaultHeaders(defaultHeaders),
-                    new RequestContent(),
-                    new RequestTargetHost(),
-                    new RequestClientConnControl(),
-                    new RequestUserAgent(userAgentCopy),
-                    new RequestExpectContinue());
+
+            // 添加请求拦截器
+            RequestDefaultHeaders defaultHeaders = new RequestDefaultHeaders(this.defaultHeaders);
+            RequestContent requestContent = new RequestContent();
+            RequestTargetHost targetHost = new RequestTargetHost();
+            RequestClientConnControl clientConnControl = new RequestClientConnControl();
+            RequestUserAgent userAgent = new RequestUserAgent(userAgentCopy);
+            RequestExpectContinue expectContinue = new RequestExpectContinue();
+            // 添加请求拦截器
+            httpProcessorBuilder.addAll(defaultHeaders, requestContent, targetHost, clientConnControl, userAgent, expectContinue);
+
             if (!cookieManagementDisabled) {
-                b.add(new RequestAddCookies());
+                // cookie 拦截器
+                RequestAddCookies cookies = new RequestAddCookies();
+                httpProcessorBuilder.add(cookies);
             }
+
             if (!contentCompressionDisabled) {
                 if (contentDecoderMap != null) {
                     final List<String> encodings = new ArrayList<String>(contentDecoderMap.keySet());
                     Collections.sort(encodings);
-                    b.add(new RequestAcceptEncoding(encodings));
+
+                    httpProcessorBuilder.add(new RequestAcceptEncoding(encodings));
                 } else {
-                    b.add(new RequestAcceptEncoding());
+                    httpProcessorBuilder.add(new RequestAcceptEncoding());
                 }
             }
+
             if (!authCachingDisabled) {
-                b.add(new RequestAuthCache());
+                httpProcessorBuilder.add(new RequestAuthCache());
             }
+
+            // 添加响应拦截器
             if (!cookieManagementDisabled) {
-                b.add(new ResponseProcessCookies());
+                httpProcessorBuilder.add(new ResponseProcessCookies());
             }
+
             if (!contentCompressionDisabled) {
                 if (contentDecoderMap != null) {
                     final RegistryBuilder<InputStreamFactory> b2 = RegistryBuilder.create();
                     for (final Map.Entry<String, InputStreamFactory> entry: contentDecoderMap.entrySet()) {
                         b2.register(entry.getKey(), entry.getValue());
                     }
-                    b.add(new ResponseContentEncoding(b2.build()));
+                    httpProcessorBuilder.add(new ResponseContentEncoding(b2.build()));
                 } else {
-                    b.add(new ResponseContentEncoding());
+                    httpProcessorBuilder.add(new ResponseContentEncoding());
                 }
             }
             if (requestLast != null) {
                 for (final HttpRequestInterceptor i: requestLast) {
-                    b.addLast(i);
+                    httpProcessorBuilder.addLast(i);
                 }
             }
             if (responseLast != null) {
                 for (final HttpResponseInterceptor i: responseLast) {
-                    b.addLast(i);
+                    httpProcessorBuilder.addLast(i);
                 }
             }
-            httpprocessorCopy = b.build();
+
+            // ImmutableHttpProcessor
+            httpprocessorCopy = httpProcessorBuilder.build();
         }
 
+        // execChain 中也绑定了HttpProcessor
+        // ProtocolExec 中也绑定HttpProcessor
         execChain = new ProtocolExec(execChain, httpprocessorCopy);
-
+        //
         execChain = decorateProtocolExec(execChain);
 
         // Add request retry executor, if not disabled
@@ -1166,21 +1196,28 @@ public class HttpClientBuilder {
             if (retryHandlerCopy == null) {
                 retryHandlerCopy = DefaultHttpRequestRetryHandler.INSTANCE;
             }
+
+            //
             execChain = new RetryExec(execChain, retryHandlerCopy);
         }
 
         HttpRoutePlanner routePlannerCopy = this.routePlanner;
         if (routePlannerCopy == null) {
+
             SchemePortResolver schemePortResolverCopy = this.schemePortResolver;
+
             if (schemePortResolverCopy == null) {
+                //
                 schemePortResolverCopy = DefaultSchemePortResolver.INSTANCE;
             }
+
             if (proxy != null) {
                 routePlannerCopy = new DefaultProxyRoutePlanner(proxy, schemePortResolverCopy);
             } else if (systemProperties) {
-                routePlannerCopy = new SystemDefaultRoutePlanner(
-                        schemePortResolverCopy, ProxySelector.getDefault());
+                ProxySelector proxySelector = ProxySelector.getDefault();
+                routePlannerCopy = new SystemDefaultRoutePlanner(schemePortResolverCopy, proxySelector);
             } else {
+                //
                 routePlannerCopy = new DefaultRoutePlanner(schemePortResolverCopy);
             }
         }
@@ -1188,6 +1225,7 @@ public class HttpClientBuilder {
         // Optionally, add service unavailable retry executor
         final ServiceUnavailableRetryStrategy serviceUnavailStrategyCopy = this.serviceUnavailStrategy;
         if (serviceUnavailStrategyCopy != null) {
+            // 服务端不可用处理策略
             execChain = new ServiceUnavailableRetryExec(execChain, serviceUnavailStrategyCopy);
         }
 
@@ -1197,11 +1235,13 @@ public class HttpClientBuilder {
             if (redirectStrategyCopy == null) {
                 redirectStrategyCopy = DefaultRedirectStrategy.INSTANCE;
             }
+            // 重定向处理执行器
             execChain = new RedirectExec(execChain, routePlannerCopy, redirectStrategyCopy);
         }
 
         // Optionally, add connection back-off executor
         if (this.backoffManager != null && this.connectionBackoffStrategy != null) {
+            //
             execChain = new BackoffStrategyExec(execChain, this.connectionBackoffStrategy, this.backoffManager);
         }
 
@@ -1242,11 +1282,14 @@ public class HttpClientBuilder {
             final HttpClientConnectionManager cm = connManagerCopy;
 
             if (evictExpiredConnections || evictIdleConnections) {
-                final IdleConnectionEvictor connectionEvictor = new IdleConnectionEvictor(cm,
-                        maxIdleTime > 0 ? maxIdleTime : 10, maxIdleTimeUnit != null ? maxIdleTimeUnit : TimeUnit.SECONDS,
-                        maxIdleTime, maxIdleTimeUnit);
-                closeablesCopy.add(new Closeable() {
 
+                long l = maxIdleTime > 0 ? maxIdleTime : 10;
+                TimeUnit timeUnit = maxIdleTimeUnit != null ? maxIdleTimeUnit : TimeUnit.SECONDS;
+                //
+                final IdleConnectionEvictor connectionEvictor =
+                        new IdleConnectionEvictor(cm, l, timeUnit, maxIdleTime, maxIdleTimeUnit);
+
+                closeablesCopy.add(new Closeable() {
                     @Override
                     public void close() throws IOException {
                         connectionEvictor.shutdown();
@@ -1256,19 +1299,21 @@ public class HttpClientBuilder {
                             Thread.currentThread().interrupt();
                         }
                     }
-
                 });
+
                 connectionEvictor.start();
             }
-            closeablesCopy.add(new Closeable() {
 
+            closeablesCopy.add(new Closeable() {
                 @Override
                 public void close() throws IOException {
                     cm.shutdown();
                 }
-
             });
         }
+
+        RequestConfig defaultRequestConfigCopy = defaultRequestConfig != null
+                ? defaultRequestConfig : RequestConfig.DEFAULT;
 
         return new InternalHttpClient(
                 execChain,
@@ -1278,7 +1323,7 @@ public class HttpClientBuilder {
                 authSchemeRegistryCopy,
                 defaultCookieStore,
                 defaultCredentialsProvider,
-                defaultRequestConfig != null ? defaultRequestConfig : RequestConfig.DEFAULT,
+                defaultRequestConfigCopy,
                 closeablesCopy);
     }
 

@@ -133,6 +133,9 @@ public class HttpClientContext extends HttpCoreContext {
      */
     public static final String REQUEST_CONFIG = "http.request-config";
 
+    /**
+     *
+     */
     public static HttpClientContext adapt(final HttpContext context) {
         return context instanceof HttpClientContext
                         ? (HttpClientContext) context
@@ -143,6 +146,9 @@ public class HttpClientContext extends HttpCoreContext {
         return new HttpClientContext(new BasicHttpContext());
     }
 
+    /**
+     *
+     */
     public HttpClientContext(final HttpContext context) {
         super(context);
     }
@@ -233,6 +239,9 @@ public class HttpClientContext extends HttpCoreContext {
         setAttribute(USER_TOKEN, obj);
     }
 
+    /**
+     *
+     */
     public RequestConfig getRequestConfig() {
         final RequestConfig config = getAttribute(REQUEST_CONFIG, RequestConfig.class);
         return config != null ? config : RequestConfig.DEFAULT;

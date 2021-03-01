@@ -34,6 +34,9 @@ import org.apache.http.concurrent.Cancellable;
  * blocking I/O operations that could be cancelled.
  *
  * @since 4.3
+ *
+ *
+ *
  */
 public interface HttpExecutionAware {
 

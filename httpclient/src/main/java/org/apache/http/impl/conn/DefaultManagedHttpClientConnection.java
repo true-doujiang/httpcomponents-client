@@ -52,14 +52,18 @@ import org.apache.http.protocol.HttpContext;
  * Default {@link ManagedHttpClientConnection} implementation.
  * @since 4.3
  */
-public class DefaultManagedHttpClientConnection extends DefaultBHttpClientConnection
-                                 implements ManagedHttpClientConnection, HttpContext {
+public class DefaultManagedHttpClientConnection
+        extends DefaultBHttpClientConnection
+        implements ManagedHttpClientConnection, HttpContext {
 
     private final String id;
     private final Map<String, Object> attributes;
 
     private volatile boolean shutdown;
 
+    /**
+     * constructor
+     */
     public DefaultManagedHttpClientConnection(
             final String id,
             final int bufferSize,

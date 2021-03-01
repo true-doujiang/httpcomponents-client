@@ -56,10 +56,16 @@ public class HttpPost extends HttpEntityEnclosingRequestBase {
 
     public final static String METHOD_NAME = "POST";
 
+    /**
+     * constructor
+     */
     public HttpPost() {
         super();
     }
 
+    /**
+     * constructor
+     */
     public HttpPost(final URI uri) {
         super();
         setURI(uri);

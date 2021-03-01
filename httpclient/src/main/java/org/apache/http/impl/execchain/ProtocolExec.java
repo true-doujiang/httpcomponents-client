@@ -76,15 +76,21 @@ public class ProtocolExec implements ClientExecChain {
 
     private final Log log = LogFactory.getLog(getClass());
 
+    //
     private final ClientExecChain requestExecutor;
+    //
     private final HttpProcessor httpProcessor;
 
+    /**
+     * default constructor
+     */
     public ProtocolExec(final ClientExecChain requestExecutor, final HttpProcessor httpProcessor) {
         Args.notNull(requestExecutor, "HTTP client request executor");
         Args.notNull(httpProcessor, "HTTP protocol processor");
         this.requestExecutor = requestExecutor;
         this.httpProcessor = httpProcessor;
     }
+
 
     void rewriteRequestURI(
             final HttpRequestWrapper request,
@@ -93,7 +99,8 @@ public class ProtocolExec implements ClientExecChain {
         final URI uri = request.getURI();
         if (uri != null) {
             try {
-                request.setURI(URIUtils.rewriteURIForRoute(uri, route, normalizeUri));
+                URI uri1 = URIUtils.rewriteURIForRoute(uri, route, normalizeUri);
+                request.setURI(uri1);
             } catch (final URISyntaxException ex) {
                 throw new ProtocolException("Invalid URI: " + uri, ex);
             }
@@ -105,8 +112,7 @@ public class ProtocolExec implements ClientExecChain {
             final HttpRoute route,
             final HttpRequestWrapper request,
             final HttpClientContext context,
-            final HttpExecutionAware execAware) throws IOException,
-        HttpException {
+            final HttpExecutionAware execAware) throws IOException, HttpException {
         Args.notNull(route, "HTTP route");
         Args.notNull(request, "HTTP request");
         Args.notNull(context, "HTTP context");
@@ -170,9 +176,8 @@ public class ProtocolExec implements ClientExecChain {
                     credsProvider = new BasicCredentialsProvider();
                     context.setCredentialsProvider(credsProvider);
                 }
-                credsProvider.setCredentials(
-                        new AuthScope(target),
-                        new UsernamePasswordCredentials(userinfo));
+                UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(userinfo);
+                credsProvider.setCredentials(new AuthScope(target), credentials);
             }
         }
 
@@ -180,11 +185,11 @@ public class ProtocolExec implements ClientExecChain {
         context.setAttribute(HttpCoreContext.HTTP_TARGET_HOST, target);
         context.setAttribute(HttpClientContext.HTTP_ROUTE, route);
         context.setAttribute(HttpCoreContext.HTTP_REQUEST, request);
-
+        // 调用请求拦截器
         this.httpProcessor.process(request, context);
 
-        final CloseableHttpResponse response = this.requestExecutor.execute(route, request,
-            context, execAware);
+        //
+        final CloseableHttpResponse response = this.requestExecutor.execute(route, request, context, execAware);
         try {
             // Run response protocol interceptors
             context.setAttribute(HttpCoreContext.HTTP_RESPONSE, response);

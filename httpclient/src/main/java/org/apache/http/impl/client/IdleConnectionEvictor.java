@@ -43,21 +43,29 @@ public final class IdleConnectionEvictor {
 
     private final HttpClientConnectionManager connectionManager;
     private final ThreadFactory threadFactory;
+    //
     private final Thread thread;
+
     private final long sleepTimeMs;
+
     private final long maxIdleTimeMs;
 
     private volatile Exception exception;
 
+    /**
+     * constructor
+     */
     public IdleConnectionEvictor(
             final HttpClientConnectionManager connectionManager,
             final ThreadFactory threadFactory,
             final long sleepTime, final TimeUnit sleepTimeUnit,
             final long maxIdleTime, final TimeUnit maxIdleTimeUnit) {
         this.connectionManager = Args.notNull(connectionManager, "Connection manager");
+        // 内部类
         this.threadFactory = threadFactory != null ? threadFactory : new DefaultThreadFactory();
         this.sleepTimeMs = sleepTimeUnit != null ? sleepTimeUnit.toMillis(sleepTime) : sleepTime;
         this.maxIdleTimeMs = maxIdleTimeUnit != null ? maxIdleTimeUnit.toMillis(maxIdleTime) : maxIdleTime;
+        //
         this.thread = this.threadFactory.newThread(new Runnable() {
             @Override
             public void run() {
@@ -77,6 +85,10 @@ public final class IdleConnectionEvictor {
         });
     }
 
+
+    /**
+     * constructor
+     */
     public IdleConnectionEvictor(
             final HttpClientConnectionManager connectionManager,
             final long sleepTime, final TimeUnit sleepTimeUnit,
@@ -84,6 +96,10 @@ public final class IdleConnectionEvictor {
         this(connectionManager, null, sleepTime, sleepTimeUnit, maxIdleTime, maxIdleTimeUnit);
     }
 
+
+    /**
+     * constructor
+     */
     public IdleConnectionEvictor(
             final HttpClientConnectionManager connectionManager,
             final long maxIdleTime, final TimeUnit maxIdleTimeUnit) {
@@ -92,6 +108,9 @@ public final class IdleConnectionEvictor {
                 maxIdleTime, maxIdleTimeUnit);
     }
 
+    /**
+     * 启动守护线程
+     */
     public void start() {
         thread.start();
     }
@@ -108,6 +127,9 @@ public final class IdleConnectionEvictor {
         thread.join((timeUnit != null ? timeUnit : TimeUnit.MILLISECONDS).toMillis(time));
     }
 
+    /**
+     *
+     */
     static class DefaultThreadFactory implements ThreadFactory {
 
         @Override

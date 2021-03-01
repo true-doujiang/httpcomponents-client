@@ -75,6 +75,9 @@ public class EntityBuilder {
     private boolean chunked;
     private boolean gzipCompress;
 
+    /**
+     * default constructor
+     */
     EntityBuilder() {
         super();
     }

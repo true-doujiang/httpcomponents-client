@@ -48,10 +48,16 @@ public class HttpPut extends HttpEntityEnclosingRequestBase {
 
     public final static String METHOD_NAME = "PUT";
 
+    /**
+     * constructor
+     */
     public HttpPut() {
         super();
     }
 
+    /**
+     * constructor
+     */
     public HttpPut(final URI uri) {
         super();
         setURI(uri);

@@ -108,10 +108,15 @@ public class PoolingHttpClientConnectionManager
     private final Log log = LogFactory.getLog(getClass());
 
     private final ConfigData configData;
+    //
     private final CPool pool;
+
     private final HttpClientConnectionOperator connectionOperator;
     private final AtomicBoolean isShutDown;
 
+    /**
+     *
+     */
     private static Registry<ConnectionSocketFactory> getDefaultRegistry() {
         return RegistryBuilder.<ConnectionSocketFactory>create()
                 .register("http", PlainConnectionSocketFactory.getSocketFactory())
@@ -119,6 +124,9 @@ public class PoolingHttpClientConnectionManager
                 .build();
     }
 
+    /**
+     * default constructor
+     */
     public PoolingHttpClientConnectionManager() {
         this(getDefaultRegistry());
     }
@@ -156,14 +164,17 @@ public class PoolingHttpClientConnectionManager
         this(socketFactoryRegistry, connFactory, null, dnsResolver, -1, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * org.apache.http.impl.client.HttpClientBuilder#build() 调用
+     */
     public PoolingHttpClientConnectionManager(
             final Registry<ConnectionSocketFactory> socketFactoryRegistry,
             final HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> connFactory,
             final SchemePortResolver schemePortResolver,
             final DnsResolver dnsResolver,
             final long timeToLive, final TimeUnit timeUnit) {
-        this(
-            new DefaultHttpClientConnectionOperator(socketFactoryRegistry, schemePortResolver, dnsResolver),
+
+        this(new DefaultHttpClientConnectionOperator(socketFactoryRegistry, schemePortResolver, dnsResolver),
             connFactory,
             timeToLive, timeUnit
         );
@@ -175,12 +186,17 @@ public class PoolingHttpClientConnectionManager
     public PoolingHttpClientConnectionManager(
         final HttpClientConnectionOperator httpClientConnectionOperator,
         final HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> connFactory,
-        final long timeToLive, final TimeUnit timeUnit) {
+        final long timeToLive,
+        final TimeUnit timeUnit) {
+
         super();
+        // 内部类1
         this.configData = new ConfigData();
-        this.pool = new CPool(new InternalConnectionFactory(
-                this.configData, connFactory), 2, 20, timeToLive, timeUnit);
+        // 内部类2
+        InternalConnectionFactory connectionFactory = new InternalConnectionFactory(this.configData, connFactory);
+        this.pool = new CPool(connectionFactory, 2, 20, timeToLive, timeUnit);
         this.pool.setValidateAfterInactivity(2000);
+
         this.connectionOperator = Args.notNull(httpClientConnectionOperator, "HttpClientConnectionOperator");
         this.isShutDown = new AtomicBoolean(false);
     }
@@ -196,8 +212,9 @@ public class PoolingHttpClientConnectionManager
         super();
         this.configData = new ConfigData();
         this.pool = pool;
-        this.connectionOperator = new DefaultHttpClientConnectionOperator(
-                socketFactoryRegistry, schemePortResolver, dnsResolver);
+        DefaultHttpClientConnectionOperator operator =
+                new DefaultHttpClientConnectionOperator(socketFactoryRegistry, schemePortResolver, dnsResolver);
+        this.connectionOperator = operator;
         this.isShutDown = new AtomicBoolean(false);
     }
 
@@ -258,17 +275,24 @@ public class PoolingHttpClientConnectionManager
         return socketConfig;
     }
 
+    /**
+     *
+     */
     @Override
-    public ConnectionRequest requestConnection(
-            final HttpRoute route,
-            final Object state) {
+    public ConnectionRequest requestConnection(final HttpRoute route, final Object state) {
+
         Args.notNull(route, "HTTP route");
+
         if (this.log.isDebugEnabled()) {
             this.log.debug("Connection request: " + format(route, state) + formatStats(route));
         }
+
         Asserts.check(!this.isShutDown.get(), "Connection pool shut down");
+
         final Future<CPoolEntry> future = this.pool.lease(route, state, null);
-        return new ConnectionRequest() {
+
+        // 匿名内部类
+        ConnectionRequest connectionRequest = new ConnectionRequest() {
 
             @Override
             public boolean cancel() {
@@ -276,10 +300,12 @@ public class PoolingHttpClientConnectionManager
             }
 
             @Override
-            public HttpClientConnection get(
-                    final long timeout,
-                    final TimeUnit timeUnit) throws InterruptedException, ExecutionException, ConnectionPoolTimeoutException {
+            public HttpClientConnection get(final long timeout, final TimeUnit timeUnit)
+                    throws InterruptedException, ExecutionException, ConnectionPoolTimeoutException {
+
+                //获取一个conn链接
                 final HttpClientConnection conn = leaseConnection(future, timeout, timeUnit);
+
                 if (conn.isOpen()) {
                     final HttpHost host;
                     if (route.getProxyHost() != null) {
@@ -287,23 +313,34 @@ public class PoolingHttpClientConnectionManager
                     } else {
                         host = route.getTargetHost();
                     }
+
                     final SocketConfig socketConfig = resolveSocketConfig(host);
                     conn.setSocketTimeout(socketConfig.getSoTimeout());
                 }
+
                 return conn;
             }
-
         };
 
+        System.out.println("connectionRequest = " + connectionRequest);
+
+        return  connectionRequest;
     }
 
+    /**
+     *
+     */
     protected HttpClientConnection leaseConnection(
             final Future<CPoolEntry> future,
             final long timeout,
-            final TimeUnit timeUnit) throws InterruptedException, ExecutionException, ConnectionPoolTimeoutException {
+            final TimeUnit timeUnit)
+            throws InterruptedException, ExecutionException, ConnectionPoolTimeoutException {
+
         final CPoolEntry entry;
         try {
+
             entry = future.get(timeout, timeUnit);
+
             if (entry == null || future.isCancelled()) {
                 throw new ExecutionException(new CancellationException("Operation cancelled"));
             }
@@ -311,23 +348,32 @@ public class PoolingHttpClientConnectionManager
             if (this.log.isDebugEnabled()) {
                 this.log.debug("Connection leased: " + format(entry) + formatStats(entry.getRoute()));
             }
-            return CPoolProxy.newProxy(entry);
+
+            HttpClientConnection httpClientConnection = CPoolProxy.newProxy(entry);
+            return httpClientConnection;
         } catch (final TimeoutException ex) {
             throw new ConnectionPoolTimeoutException("Timeout waiting for connection from pool");
         }
     }
 
+    /**
+     *
+     */
     @Override
     public void releaseConnection(
             final HttpClientConnection managedConn,
             final Object state,
             final long keepalive, final TimeUnit timeUnit) {
+
         Args.notNull(managedConn, "Managed connection");
+
         synchronized (managedConn) {
+
             final CPoolEntry entry = CPoolProxy.detach(managedConn);
             if (entry == null) {
                 return;
             }
+
             final ManagedHttpClientConnection conn = entry.getConnection();
             try {
                 if (conn.isOpen()) {
@@ -354,14 +400,19 @@ public class PoolingHttpClientConnectionManager
         }
     }
 
+    /**
+     *
+     */
     @Override
     public void connect(
             final HttpClientConnection managedConn,
             final HttpRoute route,
             final int connectTimeout,
             final HttpContext context) throws IOException {
+
         Args.notNull(managedConn, "Managed Connection");
         Args.notNull(route, "HTTP route");
+
         final ManagedHttpClientConnection conn;
         synchronized (managedConn) {
             final CPoolEntry entry = CPoolProxy.getPoolEntry(managedConn);
@@ -382,8 +433,10 @@ public class PoolingHttpClientConnectionManager
             final HttpClientConnection managedConn,
             final HttpRoute route,
             final HttpContext context) throws IOException {
+
         Args.notNull(managedConn, "Managed Connection");
         Args.notNull(route, "HTTP route");
+
         final ManagedHttpClientConnection conn;
         synchronized (managedConn) {
             final CPoolEntry entry = CPoolProxy.getPoolEntry(managedConn);
@@ -397,8 +450,10 @@ public class PoolingHttpClientConnectionManager
             final HttpClientConnection managedConn,
             final HttpRoute route,
             final HttpContext context) throws IOException {
+
         Args.notNull(managedConn, "Managed Connection");
         Args.notNull(route, "HTTP route");
+
         synchronized (managedConn) {
             final CPoolEntry entry = CPoolProxy.getPoolEntry(managedConn);
             entry.markRouteComplete();
@@ -435,6 +490,10 @@ public class PoolingHttpClientConnectionManager
         }
     }
 
+    /**
+     *
+     *
+     */
     @Override
     public void closeIdleConnections(final long idleTimeout, final TimeUnit timeUnit) {
         if (this.log.isDebugEnabled()) {
@@ -560,13 +619,20 @@ public class PoolingHttpClientConnectionManager
         pool.setValidateAfterInactivity(ms);
     }
 
+    /**
+     * 内部类 1
+     */
     static class ConfigData {
 
         private final Map<HttpHost, SocketConfig> socketConfigMap;
         private final Map<HttpHost, ConnectionConfig> connectionConfigMap;
+
         private volatile SocketConfig defaultSocketConfig;
         private volatile ConnectionConfig defaultConnectionConfig;
 
+        /**
+         * constructor
+         */
         ConfigData() {
             super();
             this.socketConfigMap = new ConcurrentHashMap<HttpHost, SocketConfig>();
@@ -607,18 +673,26 @@ public class PoolingHttpClientConnectionManager
 
     }
 
-    static class InternalConnectionFactory implements ConnFactory<HttpRoute, ManagedHttpClientConnection> {
+    /**
+     * 内部类 2
+     */
+    static class InternalConnectionFactory
+            implements ConnFactory<HttpRoute, ManagedHttpClientConnection> {
 
         private final ConfigData configData;
         private final HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> connFactory;
 
+        /**
+         * constructor
+         */
         InternalConnectionFactory(
                 final ConfigData configData,
                 final HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> connFactory) {
             super();
+            // 内部类1
             this.configData = configData != null ? configData : new ConfigData();
-            this.connFactory = connFactory != null ? connFactory :
-                ManagedHttpClientConnectionFactory.INSTANCE;
+            //
+            this.connFactory = connFactory != null ? connFactory : ManagedHttpClientConnectionFactory.INSTANCE;
         }
 
         @Override
