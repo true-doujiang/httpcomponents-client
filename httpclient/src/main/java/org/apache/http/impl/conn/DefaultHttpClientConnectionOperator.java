@@ -73,7 +73,7 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
     private final DnsResolver dnsResolver;
 
     /**
-     * constructor
+     * default constructor
      */
     public DefaultHttpClientConnectionOperator(
             final Lookup<ConnectionSocketFactory> socketFactoryRegistry,

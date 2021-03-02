@@ -181,7 +181,7 @@ public class MainClientExec implements ClientExecChain {
 
         Object userToken = context.getUserToken();
 
-        //
+        // PoolingHttpClientConnectionManager中返回匿名内部类
         final ConnectionRequest connRequest = connManager.requestConnection(route, userToken);
         if (execAware != null) {
             if (execAware.isAborted()) {

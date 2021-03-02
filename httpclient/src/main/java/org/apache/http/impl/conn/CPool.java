@@ -57,13 +57,14 @@ class CPool extends AbstractConnPool<HttpRoute, ManagedHttpClientConnection, CPo
     public CPool(final ConnFactory<HttpRoute, ManagedHttpClientConnection> connFactory,
             final int defaultMaxPerRoute, final int maxTotal,
             final long timeToLive, final TimeUnit timeUnit) {
+        // 父类构造器
         super(connFactory, defaultMaxPerRoute, maxTotal);
         this.timeToLive = timeToLive;
         this.timeUnit = timeUnit;
     }
 
     /**
-     *
+     * 创建 CPoolEntry
      */
     @Override
     protected CPoolEntry createEntry(final HttpRoute route, final ManagedHttpClientConnection conn) {

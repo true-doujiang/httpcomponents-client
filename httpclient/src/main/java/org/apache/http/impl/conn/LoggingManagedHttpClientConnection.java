@@ -50,7 +50,7 @@ class LoggingManagedHttpClientConnection extends DefaultManagedHttpClientConnect
     private final Wire wire;
 
     /**
-     * constructor
+     * default constructor
      */
     public LoggingManagedHttpClientConnection(
             final String id,
@@ -66,9 +66,11 @@ class LoggingManagedHttpClientConnection extends DefaultManagedHttpClientConnect
             final ContentLengthStrategy outgoingContentStrategy,
             final HttpMessageWriterFactory<HttpRequest> requestWriterFactory,
             final HttpMessageParserFactory<HttpResponse> responseParserFactory) {
+
         super(id, bufferSize, fragmentSizeHint, charDecoder, charEncoder,
                 constraints, incomingContentStrategy, outgoingContentStrategy,
                 requestWriterFactory, responseParserFactory);
+
         this.log = log;
         this.headerLog = headerLog;
         this.wire = new Wire(wireLog, id);

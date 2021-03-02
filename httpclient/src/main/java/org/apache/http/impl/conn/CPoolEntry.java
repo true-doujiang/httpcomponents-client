@@ -44,12 +44,15 @@ import org.apache.http.pool.PoolEntry;
 @Contract(threading = ThreadingBehavior.SAFE)
 class CPoolEntry extends PoolEntry<HttpRoute, ManagedHttpClientConnection> {
 
+
     private final Log log;
     private volatile boolean routeComplete;
 
 
     /**
-     * constructor
+     * default constructor
+     *
+     * org.apache.http.impl.conn.CPool#createEntry() 调用
      */
     public CPoolEntry(
             final Log log,

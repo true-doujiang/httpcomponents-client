@@ -75,9 +75,11 @@ public class DefaultManagedHttpClientConnection
             final ContentLengthStrategy outgoingContentStrategy,
             final HttpMessageWriterFactory<HttpRequest> requestWriterFactory,
             final HttpMessageParserFactory<HttpResponse> responseParserFactory) {
+
         super(bufferSize, fragmentSizeHint, charDecoder, charEncoder,
                 constraints, incomingContentStrategy, outgoingContentStrategy,
                 requestWriterFactory, responseParserFactory);
+
         this.id = id;
         this.attributes = new ConcurrentHashMap<String, Object>();
     }

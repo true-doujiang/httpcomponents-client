@@ -108,7 +108,7 @@ public class PoolingHttpClientConnectionManager
     private final Log log = LogFactory.getLog(getClass());
 
     private final ConfigData configData;
-    //
+    // CPool 里面包含 InternalConnectionFactory(本类的内部类)
     private final CPool pool;
 
     private final HttpClientConnectionOperator connectionOperator;
@@ -276,7 +276,7 @@ public class PoolingHttpClientConnectionManager
     }
 
     /**
-     *
+     * org.apache.http.impl.execchain.MainClientExec#execute() 真正执行的时候才会从连接池获取 http conn
      */
     @Override
     public ConnectionRequest requestConnection(final HttpRoute route, final Object state) {
@@ -288,7 +288,7 @@ public class PoolingHttpClientConnectionManager
         }
 
         Asserts.check(!this.isShutDown.get(), "Connection pool shut down");
-
+        // CPool继承AbstractConnPool中返回匿名内部类
         final Future<CPoolEntry> future = this.pool.lease(route, state, null);
 
         // 匿名内部类
@@ -338,13 +338,15 @@ public class PoolingHttpClientConnectionManager
 
         final CPoolEntry entry;
         try {
-
+            // future: org.apache.http.pool.AbstractConnPool.lease() 中返回的匿名内部类
             entry = future.get(timeout, timeUnit);
 
             if (entry == null || future.isCancelled()) {
                 throw new ExecutionException(new CancellationException("Operation cancelled"));
             }
+
             Asserts.check(entry.getConnection() != null, "Pool entry with no connection");
+
             if (this.log.isDebugEnabled()) {
                 this.log.debug("Connection leased: " + format(entry) + formatStats(entry.getRoute()));
             }
@@ -679,11 +681,13 @@ public class PoolingHttpClientConnectionManager
     static class InternalConnectionFactory
             implements ConnFactory<HttpRoute, ManagedHttpClientConnection> {
 
+        //
         private final ConfigData configData;
+        // ManagedHttpClientConnectionFactory
         private final HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> connFactory;
 
         /**
-         * constructor
+         * default constructor
          */
         InternalConnectionFactory(
                 final ConfigData configData,

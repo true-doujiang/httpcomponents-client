@@ -40,6 +40,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.annotation.Contract;
 import org.apache.http.annotation.ThreadingBehavior;
 import org.apache.http.config.ConnectionConfig;
+import org.apache.http.config.MessageConstraints;
 import org.apache.http.conn.HttpConnectionFactory;
 import org.apache.http.conn.ManagedHttpClientConnection;
 import org.apache.http.conn.routing.HttpRoute;
@@ -67,6 +68,7 @@ public class ManagedHttpClientConnectionFactory
     private final Log headerLog = LogFactory.getLog("org.apache.http.headers");
     private final Log wireLog = LogFactory.getLog("org.apache.http.wire");
 
+    // 构造器中初始化
     private final HttpMessageWriterFactory<HttpRequest> requestWriterFactory;
     private final HttpMessageParserFactory<HttpResponse> responseParserFactory;
     private final ContentLengthStrategy incomingContentStrategy;
@@ -103,22 +105,30 @@ public class ManagedHttpClientConnectionFactory
     }
 
     /**
-     * default construcrot
+     * default constructor
      */
     public ManagedHttpClientConnectionFactory() {
         this(null, null);
     }
 
+
+    /**
+     * 创建http connection
+     */
     @Override
     public ManagedHttpClientConnection create(final HttpRoute route, final ConnectionConfig config) {
         final ConnectionConfig cconfig = config != null ? config : ConnectionConfig.DEFAULT;
         CharsetDecoder charDecoder = null;
         CharsetEncoder charEncoder = null;
+
         final Charset charset = cconfig.getCharset();
+
         final CodingErrorAction malformedInputAction = cconfig.getMalformedInputAction() != null ?
                 cconfig.getMalformedInputAction() : CodingErrorAction.REPORT;
+
         final CodingErrorAction unmappableInputAction = cconfig.getUnmappableInputAction() != null ?
                 cconfig.getUnmappableInputAction() : CodingErrorAction.REPORT;
+
         if (charset != null) {
             charDecoder = charset.newDecoder();
             charDecoder.onMalformedInput(malformedInputAction);
@@ -130,16 +140,21 @@ public class ManagedHttpClientConnectionFactory
 
         final String id = "http-outgoing-" + Long.toString(COUNTER.getAndIncrement());
 
+        int bufferSize = cconfig.getBufferSize();
+        int fragmentSizeHint = cconfig.getFragmentSizeHint();
+        MessageConstraints messageConstraints = cconfig.getMessageConstraints();
+
+        // 创建一个 http connection
         return new LoggingManagedHttpClientConnection(
                 id,
                 log,
                 headerLog,
                 wireLog,
-                cconfig.getBufferSize(),
-                cconfig.getFragmentSizeHint(),
+                bufferSize,
+                fragmentSizeHint,
                 charDecoder,
                 charEncoder,
-                cconfig.getMessageConstraints(),
+                messageConstraints,
                 incomingContentStrategy,
                 outgoingContentStrategy,
                 requestWriterFactory,

@@ -46,10 +46,11 @@ import org.apache.http.protocol.HttpContext;
  */
 class CPoolProxy implements ManagedHttpClientConnection, HttpContext {
 
+    //
     private volatile CPoolEntry poolEntry;
 
     /**
-     * constructor
+     * default constructor
      */
     CPoolProxy(final CPoolEntry entry) {
         super();
