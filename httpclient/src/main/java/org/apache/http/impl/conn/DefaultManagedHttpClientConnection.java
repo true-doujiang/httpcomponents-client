@@ -116,6 +116,10 @@ public class DefaultManagedHttpClientConnection
         this.attributes.put(id, obj);
     }
 
+    /**
+     *
+     * @param socket the socket to bind the connection to.
+     */
     @Override
     public void bind(final Socket socket) throws IOException {
         if (this.shutdown) {

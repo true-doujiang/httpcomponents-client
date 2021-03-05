@@ -28,6 +28,7 @@ package org.apache.http.impl.conn;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
@@ -111,6 +112,7 @@ public class PoolingHttpClientConnectionManager
     // CPool 里面包含 InternalConnectionFactory(本类的内部类)
     private final CPool pool;
 
+    // DefaultHttpClientConnectionOperator
     private final HttpClientConnectionOperator connectionOperator;
     private final AtomicBoolean isShutDown;
 
@@ -166,6 +168,7 @@ public class PoolingHttpClientConnectionManager
 
     /**
      * org.apache.http.impl.client.HttpClientBuilder#build() 调用
+     * connFactory=schemePortResolver=dnsResolvernull
      */
     public PoolingHttpClientConnectionManager(
             final Registry<ConnectionSocketFactory> socketFactoryRegistry,
@@ -194,6 +197,7 @@ public class PoolingHttpClientConnectionManager
         this.configData = new ConfigData();
         // 内部类2
         InternalConnectionFactory connectionFactory = new InternalConnectionFactory(this.configData, connFactory);
+        // 每个router默认最大2个链接
         this.pool = new CPool(connectionFactory, 2, 20, timeToLive, timeUnit);
         this.pool.setValidateAfterInactivity(2000);
 
@@ -288,10 +292,15 @@ public class PoolingHttpClientConnectionManager
         }
 
         Asserts.check(!this.isShutDown.get(), "Connection pool shut down");
-        // CPool继承AbstractConnPool中返回匿名内部类
+
+        /*
+         * CPool继承AbstractConnPool中返回匿名内部类
+         */
         final Future<CPoolEntry> future = this.pool.lease(route, state, null);
 
-        // 匿名内部类
+        /*
+         * 匿名内部类
+         */
         ConnectionRequest connectionRequest = new ConnectionRequest() {
 
             @Override
@@ -303,7 +312,7 @@ public class PoolingHttpClientConnectionManager
             public HttpClientConnection get(final long timeout, final TimeUnit timeUnit)
                     throws InterruptedException, ExecutionException, ConnectionPoolTimeoutException {
 
-                //获取一个conn链接
+                //获取一个conn链接                    下面一个方法
                 final HttpClientConnection conn = leaseConnection(future, timeout, timeUnit);
 
                 if (conn.isOpen()) {
@@ -403,7 +412,7 @@ public class PoolingHttpClientConnectionManager
     }
 
     /**
-     *
+     * org.apache.http.impl.execchain.MainClientExec#establishRoute() 中调用
      */
     @Override
     public void connect(
@@ -418,6 +427,7 @@ public class PoolingHttpClientConnectionManager
         final ManagedHttpClientConnection conn;
         synchronized (managedConn) {
             final CPoolEntry entry = CPoolProxy.getPoolEntry(managedConn);
+            // LoggingManagedHttpClientConnection
             conn = entry.getConnection();
         }
         final HttpHost host;
@@ -426,8 +436,10 @@ public class PoolingHttpClientConnectionManager
         } else {
             host = route.getTargetHost();
         }
-        this.connectionOperator.connect(
-                conn, host, route.getLocalSocketAddress(), connectTimeout, resolveSocketConfig(host), context);
+        InetSocketAddress socketAddress = route.getLocalSocketAddress();
+        SocketConfig socketConfig = resolveSocketConfig(host);
+
+        this.connectionOperator.connect(conn, host, socketAddress, connectTimeout, socketConfig, context);
     }
 
     @Override

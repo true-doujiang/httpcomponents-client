@@ -1,6 +1,5 @@
 package org.apache.http.my;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -15,7 +14,9 @@ public class GetTest {
     public static void main(String[] args) {
         CloseableHttpClient httpClient = HttpClients.createDefault();
         try {
-            HttpGet httpGet = new HttpGet("http://www.baidu.com/");
+//            HttpGet httpGet = new HttpGet("http://www.baidu.com/");
+            HttpGet httpGet = new HttpGet("http://localhost:8080/test/get?userName=333");
+            httpGet.setHeader("testHeader", "testValue");
             CloseableHttpResponse response = null;
             response = httpClient.execute(httpGet);
             try {

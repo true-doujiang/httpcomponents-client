@@ -43,6 +43,8 @@ import org.apache.http.protocol.HttpContext;
 
 /**
  * @since 4.3
+ *
+ * CPoolProxy 他是一个HttpConnection
  */
 class CPoolProxy implements ManagedHttpClientConnection, HttpContext {
 
@@ -270,8 +272,13 @@ class CPoolProxy implements ManagedHttpClientConnection, HttpContext {
         return CPoolProxy.class.cast(conn);
     }
 
+    /**
+     *
+     * @param proxy
+     */
     public static CPoolEntry getPoolEntry(final HttpClientConnection proxy) {
-        final CPoolEntry entry = getProxy(proxy).getPoolEntry();
+        CPoolProxy cPoolProxy = getProxy(proxy);
+        final CPoolEntry entry = cPoolProxy.getPoolEntry();
         if (entry == null) {
             throw new ConnectionShutdownException();
         }

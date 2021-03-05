@@ -99,6 +99,8 @@ public class RetryExec implements ClientExecChain {
 
             } catch (final IOException ex) {
 
+                ex.printStackTrace();
+
                 if (execAware != null && execAware.isAborted()) {
                     this.log.debug("Request has been aborted");
                     throw ex;

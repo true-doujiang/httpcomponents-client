@@ -54,6 +54,9 @@ public class PlainConnectionSocketFactory implements ConnectionSocketFactory {
         super();
     }
 
+    /**
+     * 创建socket
+     */
     @Override
     public Socket createSocket(final HttpContext context) throws IOException {
         return new Socket();

@@ -145,6 +145,8 @@ public class MinimalClientExec implements ClientExecChain {
 
         rewriteRequestURI(request, route, context.getRequestConfig().isNormalizeUri());
 
+        System.out.println("route = " + route);
+
         final ConnectionRequest connRequest = connManager.requestConnection(route, null);
         if (execAware != null) {
             if (execAware.isAborted()) {

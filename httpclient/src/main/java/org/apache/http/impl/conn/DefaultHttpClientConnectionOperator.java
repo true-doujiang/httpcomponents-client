@@ -68,12 +68,15 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
 
     private final Log log = LogFactory.getLog(getClass());
 
+    //
     private final Lookup<ConnectionSocketFactory> socketFactoryRegistry;
     private final SchemePortResolver schemePortResolver;
     private final DnsResolver dnsResolver;
 
     /**
      * default constructor
+     *
+     * org.apache.http.impl.conn.PoolingHttpClientConnectionManager#PoolingHttpClientConnectionManager() 调用
      */
     public DefaultHttpClientConnectionOperator(
             final Lookup<ConnectionSocketFactory> socketFactoryRegistry,
@@ -87,8 +90,14 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
         this.dnsResolver = dnsResolver != null ? dnsResolver : SystemDefaultDnsResolver.INSTANCE;
     }
 
+    /**
+     *
+     * @param context
+     * @return
+     */
     @SuppressWarnings("unchecked")
     private Lookup<ConnectionSocketFactory> getSocketFactoryRegistry(final HttpContext context) {
+        // 事先没有放到context中所以这里 返回null
         Lookup<ConnectionSocketFactory> reg = (Lookup<ConnectionSocketFactory>)
                 context.getAttribute(SOCKET_FACTORY_REGISTRY);
         if (reg == null) {
@@ -120,6 +129,7 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
             final InetAddress address = addresses[i];
             final boolean last = i == addresses.length - 1;
 
+            // 重要找到创建socket对象的代码了
             Socket sock = sf.createSocket(context);
             sock.setSoTimeout(socketConfig.getSoTimeout());
             sock.setReuseAddress(socketConfig.isSoReuseAddress());
@@ -136,6 +146,7 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
             if (linger >= 0) {
                 sock.setSoLinger(true, linger);
             }
+
             conn.bind(sock);
 
             final InetSocketAddress remoteAddress = new InetSocketAddress(address, port);
@@ -144,11 +155,14 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
             }
 
             try {
+                //
                 sock = sf.connectSocket(connectTimeout, sock, host, remoteAddress, localAddress, context);
+                //
                 conn.bind(sock);
                 if (this.log.isDebugEnabled()) {
                     this.log.debug("Connection established " + conn);
                 }
+
                 return;
             } catch (final SocketTimeoutException ex) {
                 if (last) {

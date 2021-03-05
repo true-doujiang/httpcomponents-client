@@ -993,6 +993,7 @@ public class HttpClientBuilder {
                 }
             }
 
+            //
             Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
                     .register("http", PlainConnectionSocketFactory.getSocketFactory())
                     .register("https", sslSocketFactoryCopy)
