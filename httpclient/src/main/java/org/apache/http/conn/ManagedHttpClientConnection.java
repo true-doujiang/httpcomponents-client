@@ -58,6 +58,9 @@ public interface ManagedHttpClientConnection extends HttpClientConnection, HttpI
      *
      * @param socket the socket to bind the connection to.
      * @throws IOException
+     *
+     *
+     *
      */
     void bind(Socket socket) throws IOException;
 

@@ -48,8 +48,42 @@ import org.apache.http.protocol.HttpContext;
  */
 class CPoolProxy implements ManagedHttpClientConnection, HttpContext {
 
-    //
+    // 里面包含了 connection
     private volatile CPoolEntry poolEntry;
+
+
+    /**
+     * 调用方
+     * @see org.apache.http.impl.conn.PoolingHttpClientConnectionManager#leaseConnection
+     */
+    public static HttpClientConnection newProxy(final CPoolEntry poolEntry) {
+        return new CPoolProxy(poolEntry);
+    }
+
+    private static CPoolProxy getProxy(final HttpClientConnection conn) {
+        if (!CPoolProxy.class.isInstance(conn)) {
+            throw new IllegalStateException("Unexpected connection proxy class: " + conn.getClass());
+        }
+        return CPoolProxy.class.cast(conn);
+    }
+
+    /**
+     *
+     * @param proxy
+     */
+    public static CPoolEntry getPoolEntry(final HttpClientConnection proxy) {
+        CPoolProxy cPoolProxy = getProxy(proxy);
+        final CPoolEntry entry = cPoolProxy.getPoolEntry();
+        if (entry == null) {
+            throw new ConnectionShutdownException();
+        }
+        return entry;
+    }
+
+    public static CPoolEntry detach(final HttpClientConnection conn) {
+        return getProxy(conn).detach();
+    }
+
 
     /**
      * default constructor
@@ -256,37 +290,6 @@ class CPoolProxy implements ManagedHttpClientConnection, HttpContext {
         }
         sb.append('}');
         return sb.toString();
-    }
-
-    /**
-     *
-     */
-    public static HttpClientConnection newProxy(final CPoolEntry poolEntry) {
-        return new CPoolProxy(poolEntry);
-    }
-
-    private static CPoolProxy getProxy(final HttpClientConnection conn) {
-        if (!CPoolProxy.class.isInstance(conn)) {
-            throw new IllegalStateException("Unexpected connection proxy class: " + conn.getClass());
-        }
-        return CPoolProxy.class.cast(conn);
-    }
-
-    /**
-     *
-     * @param proxy
-     */
-    public static CPoolEntry getPoolEntry(final HttpClientConnection proxy) {
-        CPoolProxy cPoolProxy = getProxy(proxy);
-        final CPoolEntry entry = cPoolProxy.getPoolEntry();
-        if (entry == null) {
-            throw new ConnectionShutdownException();
-        }
-        return entry;
-    }
-
-    public static CPoolEntry detach(final HttpClientConnection conn) {
-        return getProxy(conn).detach();
     }
 
 }

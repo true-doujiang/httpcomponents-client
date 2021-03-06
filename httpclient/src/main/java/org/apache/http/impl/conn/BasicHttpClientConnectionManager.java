@@ -85,6 +85,7 @@ public class BasicHttpClientConnectionManager implements HttpClientConnectionMan
     private final Log log = LogFactory.getLog(getClass());
 
     private final HttpClientConnectionOperator connectionOperator;
+    //
     private final HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> connFactory;
 
     private ManagedHttpClientConnection conn;
@@ -124,6 +125,7 @@ public class BasicHttpClientConnectionManager implements HttpClientConnectionMan
             final HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> connFactory) {
         super();
         this.connectionOperator = Args.notNull(httpClientConnectionOperator, "Connection operator");
+        // ManagedHttpClientConnectionFactory
         this.connFactory = connFactory != null ? connFactory : ManagedHttpClientConnectionFactory.INSTANCE;
         this.expiry = Long.MAX_VALUE;
         this.socketConfig = SocketConfig.DEFAULT;
@@ -190,8 +192,11 @@ public class BasicHttpClientConnectionManager implements HttpClientConnectionMan
     public final ConnectionRequest requestConnection(
             final HttpRoute route,
             final Object state) {
+
         Args.notNull(route, "Route");
-        return new ConnectionRequest() {
+
+        // 匿名内部类
+        ConnectionRequest connectionRequest = new ConnectionRequest() {
 
             @Override
             public boolean cancel() {
@@ -201,11 +206,13 @@ public class BasicHttpClientConnectionManager implements HttpClientConnectionMan
 
             @Override
             public HttpClientConnection get(final long timeout, final TimeUnit timeUnit) {
-                return BasicHttpClientConnectionManager.this.getConnection(
-                        route, state);
+                // 调用外部类方法
+                return BasicHttpClientConnectionManager.this.getConnection(route, state);
             }
-
         };
+
+        System.out.println(this.getClass().getSimpleName() + " connectionRequest = " + connectionRequest);
+        return connectionRequest;
     }
 
     private synchronized void closeConnection() {
@@ -231,6 +238,12 @@ public class BasicHttpClientConnectionManager implements HttpClientConnectionMan
         }
     }
 
+    /**
+     *
+     * @param route
+     * @param state
+     * @return
+     */
     synchronized HttpClientConnection getConnection(final HttpRoute route, final Object state) {
         Asserts.check(!this.isShutdown.get(), "Connection manager has been shut down");
         if (this.log.isDebugEnabled()) {
@@ -240,12 +253,17 @@ public class BasicHttpClientConnectionManager implements HttpClientConnectionMan
         if (!LangUtils.equals(this.route, route) || !LangUtils.equals(this.state, state)) {
             closeConnection();
         }
+
         this.route = route;
         this.state = state;
+
         checkExpiry();
+
         if (this.conn == null) {
+            //
             this.conn = this.connFactory.create(route, this.connConfig);
         }
+
         this.conn.setSocketTimeout(this.socketConfig.getSoTimeout());
         this.leased = true;
         return this.conn;

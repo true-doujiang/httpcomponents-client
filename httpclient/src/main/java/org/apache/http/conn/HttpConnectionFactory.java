@@ -31,11 +31,18 @@ import org.apache.http.config.ConnectionConfig;
 
 /**
  * Generic {@link HttpConnection} factory.
+ * connection工厂 client模块
  *
  * @since 4.3
  */
 public interface HttpConnectionFactory<T, C extends HttpConnection> {
 
+    /**
+     *
+     * @param route
+     * @param config
+     * @return
+     */
     C create(T route, ConnectionConfig config);
 
 }

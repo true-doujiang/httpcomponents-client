@@ -181,7 +181,7 @@ public class MainClientExec implements ClientExecChain {
 
         Object userToken = context.getUserToken();
 
-        System.out.println("MainClientExec route = " + route);
+        //System.out.println("MainClientExec route = " + route);
 
         /*
          *  PoolingHttpClientConnectionManager中返回匿名内部类
@@ -204,8 +204,12 @@ public class MainClientExec implements ClientExecChain {
         try {
             // 用户代码中配置的超时时间
             final int timeout = config.getConnectionRequestTimeout();
-            // 调用匿名内部类的get()  CPoolProxy 类型
+            // 调用匿名内部类的get()  managedConn:CPoolProxy
             managedConn = connRequest.get(timeout > 0 ? timeout : 0, TimeUnit.MILLISECONDS);
+
+            //if (managedConn instanceof CPoolProxy)
+            System.out.println(Thread.currentThread().getName() + " MainClientExec.HttpClientConnection = " + managedConn);
+
         } catch(final InterruptedException interrupted) {
             Thread.currentThread().interrupt();
             throw new RequestAbortedException("Request aborted", interrupted);

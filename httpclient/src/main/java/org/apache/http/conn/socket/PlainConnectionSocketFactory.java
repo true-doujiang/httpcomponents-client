@@ -46,6 +46,9 @@ public class PlainConnectionSocketFactory implements ConnectionSocketFactory {
 
     public static final PlainConnectionSocketFactory INSTANCE = new PlainConnectionSocketFactory();
 
+    /**
+     *  org.apache.http.impl.client.HttpClientBuilder#build() 调用
+     */
     public static PlainConnectionSocketFactory getSocketFactory() {
         return INSTANCE;
     }
@@ -62,6 +65,9 @@ public class PlainConnectionSocketFactory implements ConnectionSocketFactory {
         return new Socket();
     }
 
+    /**
+     * 连接到服务端
+     */
     @Override
     public Socket connectSocket(
             final int connectTimeout,
@@ -70,11 +76,16 @@ public class PlainConnectionSocketFactory implements ConnectionSocketFactory {
             final InetSocketAddress remoteAddress,
             final InetSocketAddress localAddress,
             final HttpContext context) throws IOException {
+
         final Socket sock = socket != null ? socket : createSocket(context);
+
         if (localAddress != null) {
+            //
             sock.bind(localAddress);
         }
+
         try {
+            //
             sock.connect(remoteAddress, connectTimeout);
         } catch (final IOException ex) {
             try {
@@ -83,6 +94,7 @@ public class PlainConnectionSocketFactory implements ConnectionSocketFactory {
             }
             throw ex;
         }
+
         return sock;
     }
 

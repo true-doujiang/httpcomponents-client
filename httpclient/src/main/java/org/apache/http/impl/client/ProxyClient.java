@@ -174,8 +174,7 @@ public class ProxyClient {
                 this.requestConfig.getLocalAddress(),
                 proxy, false, TunnelType.TUNNELLED, LayerType.PLAIN);
 
-        final ManagedHttpClientConnection conn = this.connFactory.create(
-                route, this.connectionConfig);
+        final ManagedHttpClientConnection conn = this.connFactory.create(route, this.connectionConfig);
         final HttpContext context = new BasicHttpContext();
         HttpResponse response;
 

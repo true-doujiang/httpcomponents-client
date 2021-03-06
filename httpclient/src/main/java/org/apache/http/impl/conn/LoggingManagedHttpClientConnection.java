@@ -43,6 +43,9 @@ import org.apache.http.entity.ContentLengthStrategy;
 import org.apache.http.io.HttpMessageParserFactory;
 import org.apache.http.io.HttpMessageWriterFactory;
 
+/**
+ *
+ */
 class LoggingManagedHttpClientConnection extends DefaultManagedHttpClientConnection {
 
     private final Log log;

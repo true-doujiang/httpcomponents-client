@@ -50,7 +50,7 @@ import org.apache.http.protocol.HttpContext;
  * @since 4.3
  *
  *
- * http连接池 实现类必须要加锁实现线程安全
+ * http连接池管理器 实现类必须要加锁实现线程安全
  *
  */
 public interface HttpClientConnectionManager {

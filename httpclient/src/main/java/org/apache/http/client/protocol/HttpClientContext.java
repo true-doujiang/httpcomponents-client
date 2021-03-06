@@ -142,8 +142,13 @@ public class HttpClientContext extends HttpCoreContext {
                         : new HttpClientContext(context);
     }
 
+    /**
+     *
+     * @return
+     */
     public static HttpClientContext create() {
-        return new HttpClientContext(new BasicHttpContext());
+        BasicHttpContext basicHttpContext = new BasicHttpContext();
+        return new HttpClientContext(basicHttpContext);
     }
 
     /**

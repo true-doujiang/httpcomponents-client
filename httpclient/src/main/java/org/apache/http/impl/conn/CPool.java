@@ -45,6 +45,9 @@ import org.apache.http.pool.PoolEntryCallback;
 @Contract(threading = ThreadingBehavior.SAFE)
 class CPool extends AbstractConnPool<HttpRoute, ManagedHttpClientConnection, CPoolEntry> {
 
+    /*
+     * 本类基本没做啥事，逻辑都在 AbstractConnPool中了
+     */
     private static final AtomicLong COUNTER = new AtomicLong();
 
     private final Log log = LogFactory.getLog(CPool.class);
@@ -69,7 +72,9 @@ class CPool extends AbstractConnPool<HttpRoute, ManagedHttpClientConnection, CPo
     @Override
     protected CPoolEntry createEntry(final HttpRoute route, final ManagedHttpClientConnection conn) {
         final String id = Long.toString(COUNTER.getAndIncrement());
-        return new CPoolEntry(this.log, id, route, conn, this.timeToLive, this.timeUnit);
+        CPoolEntry cPoolEntry = new CPoolEntry(this.log, id, route, conn, this.timeToLive, this.timeUnit);
+        System.out.println("CPool createEntry cPoolEntry = " + cPoolEntry);
+        return cPoolEntry;
     }
 
     @Override

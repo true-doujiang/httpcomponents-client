@@ -117,8 +117,7 @@ public class DefaultManagedHttpClientConnection
     }
 
     /**
-     *
-     * @param socket the socket to bind the connection to.
+     * 1bind
      */
     @Override
     public void bind(final Socket socket) throws IOException {

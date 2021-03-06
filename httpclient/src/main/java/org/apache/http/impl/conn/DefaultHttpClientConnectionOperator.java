@@ -106,6 +106,9 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
         return reg;
     }
 
+    /**
+     *
+     */
     @Override
     public void connect(
             final ManagedHttpClientConnection conn,
@@ -115,12 +118,14 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
             final SocketConfig socketConfig,
             final HttpContext context) throws IOException {
 
+        // 从Context中获取SocketFactory，可以看到，根据Scheme （是否是Https） 不一样会有不同。这里看到Context是做什么用的。
         final Lookup<ConnectionSocketFactory> registry = getSocketFactoryRegistry(context);
         final ConnectionSocketFactory sf = registry.lookup(host.getSchemeName());
 
         if (sf == null) {
             throw new UnsupportedSchemeException(host.getSchemeName() + " protocol is not supported");
         }
+
         final InetAddress[] addresses = host.getAddress() != null ?
                 new InetAddress[] { host.getAddress() } : this.dnsResolver.resolve(host.getHostName());
         final int port = this.schemePortResolver.resolve(host);
@@ -129,7 +134,7 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
             final InetAddress address = addresses[i];
             final boolean last = i == addresses.length - 1;
 
-            // 重要找到创建socket对象的代码了
+            // 重要找到创建socket对象的代码了 sf:PlainConnectionSocketFactory
             Socket sock = sf.createSocket(context);
             sock.setSoTimeout(socketConfig.getSoTimeout());
             sock.setReuseAddress(socketConfig.isSoReuseAddress());
@@ -147,6 +152,7 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
                 sock.setSoLinger(true, linger);
             }
 
+            // LoggingManagedHttpClientConnection  下面又bind一次???
             conn.bind(sock);
 
             final InetSocketAddress remoteAddress = new InetSocketAddress(address, port);
@@ -157,7 +163,8 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
             try {
                 //
                 sock = sf.connectSocket(connectTimeout, sock, host, remoteAddress, localAddress, context);
-                //
+
+                // connect 的过程，也就是新建Socket并绑定到HttpClientConnection上的过程。
                 conn.bind(sock);
                 if (this.log.isDebugEnabled()) {
                     this.log.debug("Connection established " + conn);
@@ -197,12 +204,10 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
         final Lookup<ConnectionSocketFactory> registry = getSocketFactoryRegistry(clientContext);
         final ConnectionSocketFactory sf = registry.lookup(host.getSchemeName());
         if (sf == null) {
-            throw new UnsupportedSchemeException(host.getSchemeName() +
-                    " protocol is not supported");
+            throw new UnsupportedSchemeException(host.getSchemeName() + " protocol is not supported");
         }
         if (!(sf instanceof LayeredConnectionSocketFactory)) {
-            throw new UnsupportedSchemeException(host.getSchemeName() +
-                    " protocol does not support connection upgrade");
+            throw new UnsupportedSchemeException(host.getSchemeName() + " protocol does not support connection upgrade");
         }
         final LayeredConnectionSocketFactory lsf = (LayeredConnectionSocketFactory) sf;
         Socket sock = conn.getSocket();

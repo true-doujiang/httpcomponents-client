@@ -101,15 +101,18 @@ import org.apache.http.util.Asserts;
  * </p>
  *
  * @since 4.3
+ *
+ * 连接池管理器，不要说成连接池，容易被误导
  */
 @Contract(threading = ThreadingBehavior.SAFE_CONDITIONAL)
 public class PoolingHttpClientConnectionManager
+    //
     implements HttpClientConnectionManager, ConnPoolControl<HttpRoute>, Closeable {
 
     private final Log log = LogFactory.getLog(getClass());
 
     private final ConfigData configData;
-    // CPool 里面包含 InternalConnectionFactory(本类的内部类)
+    // CPool才是连接池 里面包含 InternalConnectionFactory(本类的内部类)
     private final CPool pool;
 
     // DefaultHttpClientConnectionOperator
@@ -195,10 +198,12 @@ public class PoolingHttpClientConnectionManager
         super();
         // 内部类1
         this.configData = new ConfigData();
-        // 内部类2
+        // 内部类2 (其实就是对 HttpConnectionFactory包装了一层,为毛要这么做呢??? )
         InternalConnectionFactory connectionFactory = new InternalConnectionFactory(this.configData, connFactory);
         // 每个router默认最大2个链接
         this.pool = new CPool(connectionFactory, 2, 20, timeToLive, timeUnit);
+        System.out.println("PoolingHttpClientConnectionManager() CPool = " + pool);
+
         this.pool.setValidateAfterInactivity(2000);
 
         this.connectionOperator = Args.notNull(httpClientConnectionOperator, "HttpClientConnectionOperator");
@@ -299,7 +304,7 @@ public class PoolingHttpClientConnectionManager
         final Future<CPoolEntry> future = this.pool.lease(route, state, null);
 
         /*
-         * 匿名内部类
+         * 匿名内部类 MainClientExec#execute()
          */
         ConnectionRequest connectionRequest = new ConnectionRequest() {
 
@@ -308,6 +313,7 @@ public class PoolingHttpClientConnectionManager
                 return future.cancel(true);
             }
 
+            //
             @Override
             public HttpClientConnection get(final long timeout, final TimeUnit timeUnit)
                     throws InterruptedException, ExecutionException, ConnectionPoolTimeoutException {
@@ -331,13 +337,14 @@ public class PoolingHttpClientConnectionManager
             }
         };
 
-        System.out.println("connectionRequest = " + connectionRequest);
+        System.out.println(this
+                + " requestConnection() 创建匿名内部类 connectionRequest = " + connectionRequest);
 
         return  connectionRequest;
     }
 
     /**
-     *
+     * 上一个方里 ConnectionRequest 调用了我
      */
     protected HttpClientConnection leaseConnection(
             final Future<CPoolEntry> future,
@@ -347,6 +354,7 @@ public class PoolingHttpClientConnectionManager
 
         final CPoolEntry entry;
         try {
+
             // future: org.apache.http.pool.AbstractConnPool.lease() 中返回的匿名内部类
             entry = future.get(timeout, timeUnit);
 
@@ -360,6 +368,7 @@ public class PoolingHttpClientConnectionManager
                 this.log.debug("Connection leased: " + format(entry) + formatStats(entry.getRoute()));
             }
 
+            //
             HttpClientConnection httpClientConnection = CPoolProxy.newProxy(entry);
             return httpClientConnection;
         } catch (final TimeoutException ex) {
@@ -688,10 +697,10 @@ public class PoolingHttpClientConnectionManager
     }
 
     /**
-     * 内部类 2
+     * 内部类 2  内部conn工厂，
+     * 但是不是实际干活的，干活的是 connFactory: ManagedHttpClientConnectionFactory
      */
-    static class InternalConnectionFactory
-            implements ConnFactory<HttpRoute, ManagedHttpClientConnection> {
+    static class InternalConnectionFactory implements ConnFactory<HttpRoute, ManagedHttpClientConnection> {
 
         //
         private final ConfigData configData;
@@ -707,10 +716,14 @@ public class PoolingHttpClientConnectionManager
             super();
             // 内部类1
             this.configData = configData != null ? configData : new ConfigData();
-            //
+            // 连接工厂
             this.connFactory = connFactory != null ? connFactory : ManagedHttpClientConnectionFactory.INSTANCE;
         }
 
+        /**
+         * 把活交给了 ManagedHttpClientConnectionFactory
+         * @param route
+         */
         @Override
         public ManagedHttpClientConnection create(final HttpRoute route) throws IOException {
             ConnectionConfig config = null;
@@ -726,6 +739,7 @@ public class PoolingHttpClientConnectionManager
             if (config == null) {
                 config = ConnectionConfig.DEFAULT;
             }
+            //
             return this.connFactory.create(route, config);
         }
 

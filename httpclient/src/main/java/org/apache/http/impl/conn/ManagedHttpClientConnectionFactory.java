@@ -57,11 +57,18 @@ import org.apache.http.io.HttpMessageWriterFactory;
  */
 @Contract(threading = ThreadingBehavior.IMMUTABLE_CONDITIONAL)
 public class ManagedHttpClientConnectionFactory
+        //
         implements HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> {
 
+    /*
+     * 本类对象创建流程:
+     * PoolingHttpClientConnectionManager构造器找那个创建CPool用到了InternalConnectionFactor用到了本类
+     */
+
+    // 计数器
     private static final AtomicLong COUNTER = new AtomicLong();
 
-    //
+    // org.apache.http.impl.conn.PoolingHttpClientConnectionManager.InternalConnectionFactory 构造器调用
     public static final ManagedHttpClientConnectionFactory INSTANCE = new ManagedHttpClientConnectionFactory();
 
     private final Log log = LogFactory.getLog(DefaultManagedHttpClientConnection.class);
@@ -113,7 +120,12 @@ public class ManagedHttpClientConnectionFactory
 
 
     /**
+     * 调用方
+     * @see org.apache.http.impl.conn.PoolingHttpClientConnectionManager.InternalConnectionFactory
+     * create()
+     *
      * 创建http connection
+     *
      */
     @Override
     public ManagedHttpClientConnection create(final HttpRoute route, final ConnectionConfig config) {
@@ -145,7 +157,7 @@ public class ManagedHttpClientConnectionFactory
         MessageConstraints messageConstraints = cconfig.getMessageConstraints();
 
         // 创建一个 http connection
-        return new LoggingManagedHttpClientConnection(
+        LoggingManagedHttpClientConnection connection = new LoggingManagedHttpClientConnection(
                 id,
                 log,
                 headerLog,
@@ -159,6 +171,11 @@ public class ManagedHttpClientConnectionFactory
                 outgoingContentStrategy,
                 requestWriterFactory,
                 responseParserFactory);
+
+        System.out.println("ManagedHttpClientConnectionFactory create LoggingManagedHttpClientConnection = "
+                + connection);
+
+        return connection;
     }
 
 }
