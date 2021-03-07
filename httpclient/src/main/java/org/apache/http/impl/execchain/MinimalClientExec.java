@@ -34,8 +34,8 @@ import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+//import org.apache.commons.logging.Log;
+//import org.apache.commons.logging.LogFactory;
 import org.apache.http.ConnectionReuseStrategy;
 import org.apache.http.HttpClientConnection;
 import org.apache.http.HttpEntity;
@@ -68,6 +68,7 @@ import org.apache.http.protocol.RequestTargetHost;
 import org.apache.http.protocol.RequestUserAgent;
 import org.apache.http.util.Args;
 import org.apache.http.util.VersionInfo;
+import org.apache.log4j.Logger;
 
 import static org.apache.http.client.utils.URIUtils.DROP_FRAGMENT;
 import static org.apache.http.client.utils.URIUtils.DROP_FRAGMENT_AND_NORMALIZE;
@@ -84,7 +85,10 @@ import static org.apache.http.client.utils.URIUtils.DROP_FRAGMENT_AND_NORMALIZE;
 @Contract(threading = ThreadingBehavior.IMMUTABLE_CONDITIONAL)
 public class MinimalClientExec implements ClientExecChain {
 
-    private final Log log = LogFactory.getLog(getClass());
+//    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
+
+
 
     private final HttpRequestExecutor requestExecutor;
     private final HttpClientConnectionManager connManager;

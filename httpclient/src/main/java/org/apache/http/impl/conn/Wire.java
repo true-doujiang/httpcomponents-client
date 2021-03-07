@@ -30,10 +30,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.logging.Log;
+//import org.apache.commons.logging.Log;
 import org.apache.http.annotation.Contract;
 import org.apache.http.annotation.ThreadingBehavior;
 import org.apache.http.util.Args;
+import org.apache.log4j.Logger;
 
 /**
  * Logs data to the wire LOG.
@@ -44,18 +45,18 @@ import org.apache.http.util.Args;
 @Contract(threading = ThreadingBehavior.IMMUTABLE)
 public class Wire {
 
-    private final Log log;
+    private final Logger log;
     private final String id;
 
     /**
      * @since 4.3
      */
-    public Wire(final Log log, final String id) {
+    public Wire(final Logger log, final String id) {
         this.log = log;
         this.id = id;
     }
 
-    public Wire(final Log log) {
+    public Wire(final Logger log) {
         this(log, "");
     }
 

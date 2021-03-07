@@ -27,32 +27,11 @@
 
 package org.apache.http.impl.client;
 
-import java.io.IOException;
-import java.lang.reflect.UndeclaredThrowableException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.ConnectionReuseStrategy;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.HttpResponseInterceptor;
+import org.apache.http.*;
 import org.apache.http.annotation.Contract;
 import org.apache.http.annotation.ThreadingBehavior;
 import org.apache.http.auth.AuthSchemeRegistry;
-import org.apache.http.client.AuthenticationHandler;
-import org.apache.http.client.AuthenticationStrategy;
-import org.apache.http.client.BackoffManager;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ConnectionBackoffStrategy;
-import org.apache.http.client.CookieStore;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.HttpRequestRetryHandler;
-import org.apache.http.client.RedirectHandler;
-import org.apache.http.client.RedirectStrategy;
-import org.apache.http.client.RequestDirector;
-import org.apache.http.client.UserTokenHandler;
+import org.apache.http.client.*;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -69,29 +48,18 @@ import org.apache.http.conn.routing.HttpRoutePlanner;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.cookie.CookieSpecRegistry;
 import org.apache.http.impl.DefaultConnectionReuseStrategy;
-import org.apache.http.impl.auth.BasicSchemeFactory;
-import org.apache.http.impl.auth.DigestSchemeFactory;
-import org.apache.http.impl.auth.KerberosSchemeFactory;
-import org.apache.http.impl.auth.NTLMSchemeFactory;
-import org.apache.http.impl.auth.SPNegoSchemeFactory;
+import org.apache.http.impl.auth.*;
 import org.apache.http.impl.conn.BasicClientConnectionManager;
 import org.apache.http.impl.conn.DefaultHttpRoutePlanner;
 import org.apache.http.impl.conn.SchemeRegistryFactory;
-import org.apache.http.impl.cookie.BestMatchSpecFactory;
-import org.apache.http.impl.cookie.BrowserCompatSpecFactory;
-import org.apache.http.impl.cookie.IgnoreSpecFactory;
-import org.apache.http.impl.cookie.NetscapeDraftSpecFactory;
-import org.apache.http.impl.cookie.RFC2109SpecFactory;
-import org.apache.http.impl.cookie.RFC2965SpecFactory;
+import org.apache.http.impl.cookie.*;
 import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.BasicHttpProcessor;
-import org.apache.http.protocol.DefaultedHttpContext;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.HttpProcessor;
-import org.apache.http.protocol.HttpRequestExecutor;
-import org.apache.http.protocol.ImmutableHttpProcessor;
+import org.apache.http.protocol.*;
 import org.apache.http.util.Args;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.lang.reflect.UndeclaredThrowableException;
 
 /**
  * Base class for {@link org.apache.http.client.HttpClient} implementations.
@@ -198,7 +166,7 @@ import org.apache.http.util.Args;
 @Deprecated
 public abstract class AbstractHttpClient extends CloseableHttpClient {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     private HttpParams defaultParams;
     private HttpRequestExecutor requestExec;

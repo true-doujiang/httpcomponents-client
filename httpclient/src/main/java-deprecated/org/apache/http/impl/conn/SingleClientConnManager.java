@@ -27,11 +27,6 @@
 
 package org.apache.http.impl.conn;
 
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.annotation.Contract;
 import org.apache.http.annotation.ThreadingBehavior;
 import org.apache.http.conn.ClientConnectionManager;
@@ -44,6 +39,10 @@ import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.Args;
 import org.apache.http.util.Asserts;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A connection manager for a single connection. This connection manager
@@ -65,7 +64,7 @@ import org.apache.http.util.Asserts;
 @Deprecated
 public class SingleClientConnManager implements ClientConnectionManager {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     /** The message to be logged on multiple allocation. */
     public final static String MISUSE_MESSAGE =

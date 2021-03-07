@@ -26,15 +26,15 @@
  */
 package org.apache.http.impl.conn;
 
-import java.io.IOException;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.logging.Log;
 import org.apache.http.conn.OperatedClientConnection;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.routing.RouteTracker;
 import org.apache.http.pool.PoolEntry;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @since 4.2
@@ -44,11 +44,11 @@ import org.apache.http.pool.PoolEntry;
 @Deprecated
 class HttpPoolEntry extends PoolEntry<HttpRoute, OperatedClientConnection> {
 
-    private final Log log;
+    private final Logger log;
     private final RouteTracker tracker;
 
     public HttpPoolEntry(
-            final Log log,
+            final Logger log,
             final String id,
             final HttpRoute route,
             final OperatedClientConnection conn,

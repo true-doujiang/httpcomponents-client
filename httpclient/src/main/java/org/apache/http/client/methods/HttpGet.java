@@ -50,12 +50,16 @@ public class HttpGet extends HttpRequestBase {
     public final static String METHOD_NAME = "GET";
 
     /**
-     * constructor
+     * default constructor
      */
     public HttpGet() {
         super();
     }
 
+    /**
+     * 用户代码调用
+     * @param uri
+     */
     public HttpGet(final URI uri) {
         super();
         setURI(uri);
@@ -63,10 +67,13 @@ public class HttpGet extends HttpRequestBase {
 
     /**
      * @throws IllegalArgumentException if the uri is invalid.
+     * 用户代码调用
      */
     public HttpGet(final String uri) {
         super();
-        setURI(URI.create(uri));
+        // jdk api
+        URI uri1 = URI.create(uri);
+        setURI(uri1);
     }
 
     @Override

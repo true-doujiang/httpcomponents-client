@@ -26,28 +26,22 @@
  */
 package org.apache.http.impl.conn;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.annotation.Contract;
 import org.apache.http.annotation.ThreadingBehavior;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.ClientConnectionOperator;
-import org.apache.http.conn.ClientConnectionRequest;
-import org.apache.http.conn.ConnectionPoolTimeoutException;
-import org.apache.http.conn.DnsResolver;
-import org.apache.http.conn.ManagedClientConnection;
+import org.apache.http.conn.*;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.pool.ConnPoolControl;
 import org.apache.http.pool.PoolStats;
 import org.apache.http.util.Args;
 import org.apache.http.util.Asserts;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Manages a pool of {@link org.apache.http.conn.OperatedClientConnection}
@@ -73,7 +67,7 @@ import org.apache.http.util.Asserts;
 @Contract(threading = ThreadingBehavior.SAFE_CONDITIONAL)
 public class PoolingClientConnectionManager implements ClientConnectionManager, ConnPoolControl<HttpRoute> {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     private final SchemeRegistry schemeRegistry;
 

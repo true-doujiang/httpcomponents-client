@@ -26,33 +26,22 @@
  */
 package org.apache.http.impl.auth;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
-import org.apache.http.auth.AUTH;
-import org.apache.http.auth.AuthenticationException;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.InvalidCredentialsException;
-import org.apache.http.auth.KerberosCredentials;
-import org.apache.http.auth.MalformedChallengeException;
+import org.apache.http.auth.*;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.message.BufferedHeader;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Args;
 import org.apache.http.util.CharArrayBuffer;
-import org.ietf.jgss.GSSContext;
-import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSException;
-import org.ietf.jgss.GSSManager;
-import org.ietf.jgss.GSSName;
-import org.ietf.jgss.Oid;
+import org.apache.log4j.Logger;
+import org.ietf.jgss.*;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * @since 4.2
@@ -66,7 +55,7 @@ public abstract class GGSSchemeBase extends AuthSchemeBase {
         FAILED,
     }
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     private final Base64 base64codec;
     private final boolean stripPort;

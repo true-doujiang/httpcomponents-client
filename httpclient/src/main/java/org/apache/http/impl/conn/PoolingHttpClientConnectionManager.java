@@ -26,50 +26,29 @@
  */
 package org.apache.http.impl.conn;
 
+import org.apache.http.HttpClientConnection;
+import org.apache.http.HttpHost;
+import org.apache.http.annotation.Contract;
+import org.apache.http.annotation.ThreadingBehavior;
+import org.apache.http.config.*;
+import org.apache.http.conn.*;
+import org.apache.http.conn.routing.HttpRoute;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.pool.*;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.Args;
+import org.apache.http.util.Asserts;
+import org.apache.log4j.Logger;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpClientConnection;
-import org.apache.http.HttpHost;
-import org.apache.http.annotation.Contract;
-import org.apache.http.annotation.ThreadingBehavior;
-import org.apache.http.config.ConnectionConfig;
-import org.apache.http.config.Lookup;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.config.SocketConfig;
-import org.apache.http.conn.ConnectionPoolTimeoutException;
-import org.apache.http.conn.ConnectionRequest;
-import org.apache.http.conn.DnsResolver;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.conn.HttpClientConnectionOperator;
-import org.apache.http.conn.HttpConnectionFactory;
-import org.apache.http.conn.ManagedHttpClientConnection;
-import org.apache.http.conn.SchemePortResolver;
-import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.pool.ConnFactory;
-import org.apache.http.pool.ConnPoolControl;
-import org.apache.http.pool.PoolEntry;
-import org.apache.http.pool.PoolEntryCallback;
-import org.apache.http.pool.PoolStats;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.Args;
-import org.apache.http.util.Asserts;
 
 /**
  * {@code ClientConnectionPoolManager} maintains a pool of
@@ -109,7 +88,7 @@ public class PoolingHttpClientConnectionManager
     //
     implements HttpClientConnectionManager, ConnPoolControl<HttpRoute>, Closeable {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     private final ConfigData configData;
     // CPool才是连接池 里面包含 InternalConnectionFactory(本类的内部类)

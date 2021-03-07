@@ -41,10 +41,15 @@ import org.apache.http.params.HttpProtocolParams;
  * @since 4.0
  */
 @SuppressWarnings("deprecation")
-public abstract class HttpRequestBase extends AbstractExecutionAwareRequest
-    implements HttpUriRequest, Configurable {
+public abstract class HttpRequestBase
+     //
+     extends AbstractExecutionAwareRequest
+     // HttpUriRequest 继承 HttpRequest 继承 HttpMessage
+     implements HttpUriRequest, Configurable {
 
+    //
     private ProtocolVersion version;
+    //
     private URI uri;
 
     // 用户代码配置  Configurable接口定义

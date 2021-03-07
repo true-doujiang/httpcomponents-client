@@ -27,40 +27,28 @@
 
 package org.apache.http.impl.auth;
 
+import org.apache.http.*;
+import org.apache.http.auth.*;
+import org.apache.http.client.AuthenticationStrategy;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.Asserts;
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.Header;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthOption;
-import org.apache.http.auth.AuthProtocolState;
-import org.apache.http.auth.AuthScheme;
-import org.apache.http.auth.AuthState;
-import org.apache.http.auth.AuthenticationException;
-import org.apache.http.auth.ContextAwareAuthScheme;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.MalformedChallengeException;
-import org.apache.http.client.AuthenticationStrategy;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.Asserts;
 
 /**
  * @since 4.3
  */
 public class HttpAuthenticator {
 
-    private final Log log;
+    private final Logger log;
 
-    public HttpAuthenticator(final Log log) {
+    public HttpAuthenticator(final Logger log) {
         super();
-        this.log = log != null ? log : LogFactory.getLog(getClass());
+        this.log = log != null ? log : Logger.getLogger(getClass());
     }
 
     public HttpAuthenticator() {
@@ -159,9 +147,9 @@ public class HttpAuthenticator {
             }
             return false;
         } catch (final MalformedChallengeException ex) {
-            if (this.log.isWarnEnabled()) {
+            //if (this.log.isWarnEnabled()) {
                 this.log.warn("Malformed challenge: " +  ex.getMessage());
-            }
+            //}
             authState.reset();
             return false;
         }
@@ -199,9 +187,9 @@ public class HttpAuthenticator {
                         request.addHeader(header);
                         break;
                     } catch (final AuthenticationException ex) {
-                        if (this.log.isWarnEnabled()) {
+                        //if (this.log.isWarnEnabled()) {
                             this.log.warn(authScheme + " authentication error: " + ex.getMessage());
-                        }
+                        //}
                     }
                 }
                 return;
@@ -213,9 +201,9 @@ public class HttpAuthenticator {
                 final Header header = doAuth(authScheme, creds, request, context);
                 request.addHeader(header);
             } catch (final AuthenticationException ex) {
-                if (this.log.isErrorEnabled()) {
+                //if (this.log.isErrorEnabled()) {
                     this.log.error(authScheme + " authentication error: " + ex.getMessage());
-                }
+                //}
             }
         }
     }

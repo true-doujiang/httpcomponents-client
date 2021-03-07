@@ -27,30 +27,6 @@
 
 package org.apache.http.conn.ssl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Pattern;
-
-import javax.net.SocketFactory;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.SSLPeerUnverifiedException;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
-import javax.security.auth.x500.X500Principal;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpHost;
 import org.apache.http.annotation.Contract;
 import org.apache.http.annotation.ThreadingBehavior;
@@ -60,6 +36,19 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.Args;
 import org.apache.http.util.TextUtils;
+import org.apache.log4j.Logger;
+
+import javax.net.SocketFactory;
+import javax.net.ssl.*;
+import javax.security.auth.x500.X500Principal;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Layered socket factory for TLS/SSL connections.
@@ -174,7 +163,7 @@ public class SSLConnectionSocketFactory implements LayeredConnectionSocketFactor
             Pattern.compile(WEAK_KEY_EXCHANGES, Pattern.CASE_INSENSITIVE),
             Pattern.compile(WEAK_CIPHERS, Pattern.CASE_INSENSITIVE)));
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     /**
      * @since 4.4

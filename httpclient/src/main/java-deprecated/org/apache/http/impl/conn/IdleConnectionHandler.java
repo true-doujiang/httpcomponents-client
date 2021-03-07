@@ -26,15 +26,14 @@
  */
 package org.apache.http.impl.conn;
 
+import org.apache.http.HttpConnection;
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpConnection;
 
 // Currently only used by AbstractConnPool
 /**
@@ -51,7 +50,7 @@ import org.apache.http.HttpConnection;
 @Deprecated
 public class IdleConnectionHandler {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     /** Holds connections and the time they were added. */
     private final Map<HttpConnection,TimeValues> connectionToTimes;

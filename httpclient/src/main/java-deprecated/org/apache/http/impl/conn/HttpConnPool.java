@@ -26,16 +26,16 @@
  */
 package org.apache.http.impl.conn;
 
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.commons.logging.Log;
 import org.apache.http.conn.ClientConnectionOperator;
 import org.apache.http.conn.OperatedClientConnection;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.pool.AbstractConnPool;
 import org.apache.http.pool.ConnFactory;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @since 4.2
@@ -47,11 +47,11 @@ class HttpConnPool extends AbstractConnPool<HttpRoute, OperatedClientConnection,
 
     private static final AtomicLong COUNTER = new AtomicLong();
 
-    private final Log log;
+    private final Logger log;
     private final long timeToLive;
     private final TimeUnit timeUnit;
 
-    public HttpConnPool(final Log log,
+    public HttpConnPool(final Logger log,
             final ClientConnectionOperator connOperator,
             final int defaultMaxPerRoute, final int maxTotal,
             final long timeToLive, final TimeUnit timeUnit) {

@@ -30,9 +30,9 @@ package org.apache.http.impl.execchain;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+//
+//import org.apache.commons.logging.Log;
+//import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
@@ -53,6 +53,7 @@ import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.routing.HttpRoutePlanner;
 import org.apache.http.util.Args;
 import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Request executor in the request execution chain that is responsible
@@ -68,7 +69,9 @@ import org.apache.http.util.EntityUtils;
 @Contract(threading = ThreadingBehavior.IMMUTABLE_CONDITIONAL)
 public class RedirectExec implements ClientExecChain {
 
-    private final Log log = LogFactory.getLog(getClass());
+//    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
+
 
     private final ClientExecChain requestExecutor;
     private final RedirectStrategy redirectStrategy;

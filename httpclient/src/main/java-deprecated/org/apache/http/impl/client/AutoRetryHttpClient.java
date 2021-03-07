@@ -27,12 +27,6 @@
 
 package org.apache.http.impl.client;
 
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.net.URI;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -47,6 +41,11 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Args;
 import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.URI;
 
 /**
  * {@link HttpClient} implementation that can automatically retry the request in case of
@@ -64,7 +63,7 @@ public class AutoRetryHttpClient implements HttpClient {
 
     private final ServiceUnavailableRetryStrategy retryStrategy;
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     public AutoRetryHttpClient(
             final HttpClient client, final ServiceUnavailableRetryStrategy retryStrategy) {

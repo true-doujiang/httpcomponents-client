@@ -38,13 +38,14 @@ import org.apache.http.message.AbstractHttpMessage;
 
 @SuppressWarnings("deprecation")
 public abstract class AbstractExecutionAwareRequest extends AbstractHttpMessage
+        // aware消息通知接口
         implements HttpExecutionAware, AbortableHttpRequest, Cloneable, HttpRequest {
 
     //
     private final AtomicMarkableReference<Cancellable> cancellableRef;
 
     /**
-     * constructor
+     * default constructor
      */
     protected AbstractExecutionAwareRequest() {
         super();

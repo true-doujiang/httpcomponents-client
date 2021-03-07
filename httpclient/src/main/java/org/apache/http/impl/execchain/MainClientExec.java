@@ -32,8 +32,8 @@ import java.io.InterruptedIOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+//import org.apache.commons.logging.Log;
+//import org.apache.commons.logging.LogFactory;
 import org.apache.http.ConnectionReuseStrategy;
 import org.apache.http.HttpClientConnection;
 import org.apache.http.HttpEntity;
@@ -73,6 +73,7 @@ import org.apache.http.protocol.ImmutableHttpProcessor;
 import org.apache.http.protocol.RequestTargetHost;
 import org.apache.http.util.Args;
 import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
 
 /**
  * The last request executor in the HTTP request execution chain
@@ -88,7 +89,9 @@ import org.apache.http.util.EntityUtils;
 @Contract(threading = ThreadingBehavior.IMMUTABLE_CONDITIONAL)
 public class MainClientExec implements ClientExecChain {
 
-    private final Log log = LogFactory.getLog(getClass());
+//    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
+
 
     // core模块
     private final HttpRequestExecutor requestExecutor;

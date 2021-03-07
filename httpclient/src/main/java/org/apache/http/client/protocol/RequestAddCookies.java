@@ -27,20 +27,7 @@
 
 package org.apache.http.client.protocol;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.Header;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.*;
 import org.apache.http.annotation.Contract;
 import org.apache.http.annotation.ThreadingBehavior;
 import org.apache.http.client.CookieStore;
@@ -56,6 +43,14 @@ import org.apache.http.cookie.CookieSpecProvider;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Args;
 import org.apache.http.util.TextUtils;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Request interceptor that matches cookies available in the current
@@ -67,7 +62,7 @@ import org.apache.http.util.TextUtils;
 @Contract(threading = ThreadingBehavior.IMMUTABLE)
 public class RequestAddCookies implements HttpRequestInterceptor {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     /**
      * constructor

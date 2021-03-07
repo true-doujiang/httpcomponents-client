@@ -27,17 +27,7 @@
 
 package org.apache.http.impl.client;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.Header;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.ProtocolException;
+import org.apache.http.*;
 import org.apache.http.annotation.Contract;
 import org.apache.http.annotation.ThreadingBehavior;
 import org.apache.http.client.CircularRedirectException;
@@ -51,6 +41,10 @@ import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Args;
 import org.apache.http.util.Asserts;
+import org.apache.log4j.Logger;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * Default implementation of {@link RedirectHandler}.
@@ -63,7 +57,7 @@ import org.apache.http.util.Asserts;
 @Deprecated
 public class DefaultRedirectHandler implements RedirectHandler {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     private static final String REDIRECT_LOCATIONS = "http.protocol.redirect-locations";
 

@@ -27,21 +27,15 @@
 
 package org.apache.http.client.protocol;
 
-import java.util.Queue;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.auth.AuthOption;
-import org.apache.http.auth.AuthScheme;
-import org.apache.http.auth.AuthState;
-import org.apache.http.auth.AuthenticationException;
-import org.apache.http.auth.ContextAwareAuthScheme;
-import org.apache.http.auth.Credentials;
+import org.apache.http.auth.*;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Asserts;
+import org.apache.log4j.Logger;
+
+import java.util.Queue;
 
 /**
  * @deprecated Do not use.
@@ -49,7 +43,7 @@ import org.apache.http.util.Asserts;
 @Deprecated
 abstract class RequestAuthenticationBase implements HttpRequestInterceptor {
 
-    final Log log = LogFactory.getLog(getClass());
+    final Logger log = Logger.getLogger(getClass());
 
     public RequestAuthenticationBase() {
         super();
@@ -87,9 +81,9 @@ abstract class RequestAuthenticationBase implements HttpRequestInterceptor {
                         request.addHeader(header);
                         break;
                     } catch (final AuthenticationException ex) {
-                        if (this.log.isWarnEnabled()) {
+//                        if (this.log.isWarnEnabled()) {
                             this.log.warn(authScheme + " authentication error: " + ex.getMessage());
-                        }
+//                        }
                     }
                 }
                 return;
@@ -102,9 +96,9 @@ abstract class RequestAuthenticationBase implements HttpRequestInterceptor {
                 final Header header = authenticate(authScheme, creds, request, context);
                 request.addHeader(header);
             } catch (final AuthenticationException ex) {
-                if (this.log.isErrorEnabled()) {
+//                if (this.log.isErrorEnabled()) {
                     this.log.error(authScheme + " authentication error: " + ex.getMessage());
-                }
+//                }
             }
         }
     }

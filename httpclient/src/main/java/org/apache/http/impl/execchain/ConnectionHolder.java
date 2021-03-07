@@ -32,13 +32,14 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.commons.logging.Log;
+//import org.apache.commons.logging.Log;
 import org.apache.http.HttpClientConnection;
 import org.apache.http.annotation.Contract;
 import org.apache.http.annotation.ThreadingBehavior;
 import org.apache.http.concurrent.Cancellable;
 import org.apache.http.conn.ConnectionReleaseTrigger;
 import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.log4j.Logger;
 
 /**
  * Internal connection holder.
@@ -48,7 +49,7 @@ import org.apache.http.conn.HttpClientConnectionManager;
 @Contract(threading = ThreadingBehavior.SAFE)
 class ConnectionHolder implements ConnectionReleaseTrigger, Cancellable, Closeable {
 
-    private final Log log;
+    private final Logger log;
 
     // http连接池
     private final HttpClientConnectionManager manager;
@@ -62,7 +63,7 @@ class ConnectionHolder implements ConnectionReleaseTrigger, Cancellable, Closeab
     private volatile TimeUnit timeUnit;
 
     public ConnectionHolder(
-            final Log log,
+            final Logger log,
             final HttpClientConnectionManager manager,
             final HttpClientConnection managedConn) {
         super();

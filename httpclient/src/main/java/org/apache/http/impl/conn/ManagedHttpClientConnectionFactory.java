@@ -27,14 +27,6 @@
 
 package org.apache.http.impl.conn;
 
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CodingErrorAction;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.annotation.Contract;
@@ -50,6 +42,13 @@ import org.apache.http.impl.entity.StrictContentLengthStrategy;
 import org.apache.http.impl.io.DefaultHttpRequestWriterFactory;
 import org.apache.http.io.HttpMessageParserFactory;
 import org.apache.http.io.HttpMessageWriterFactory;
+import org.apache.log4j.Logger;
+
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CodingErrorAction;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Factory for {@link ManagedHttpClientConnection} instances.
@@ -71,9 +70,9 @@ public class ManagedHttpClientConnectionFactory
     // org.apache.http.impl.conn.PoolingHttpClientConnectionManager.InternalConnectionFactory 构造器调用
     public static final ManagedHttpClientConnectionFactory INSTANCE = new ManagedHttpClientConnectionFactory();
 
-    private final Log log = LogFactory.getLog(DefaultManagedHttpClientConnection.class);
-    private final Log headerLog = LogFactory.getLog("org.apache.http.headers");
-    private final Log wireLog = LogFactory.getLog("org.apache.http.wire");
+    private final Logger log = Logger.getLogger(DefaultManagedHttpClientConnection.class);
+    private final Logger headerLog = Logger.getLogger("org.apache.http.headers");
+    private final Logger wireLog = Logger.getLogger("org.apache.http.wire");
 
     // 构造器中初始化
     private final HttpMessageWriterFactory<HttpRequest> requestWriterFactory;

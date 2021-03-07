@@ -27,26 +27,17 @@
 
 package org.apache.http.client.protocol;
 
-import java.io.IOException;
-import java.util.List;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.Header;
-import org.apache.http.HeaderIterator;
-import org.apache.http.HttpException;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpResponseInterceptor;
+import org.apache.http.*;
 import org.apache.http.annotation.Contract;
 import org.apache.http.annotation.ThreadingBehavior;
 import org.apache.http.client.CookieStore;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.cookie.CookieOrigin;
-import org.apache.http.cookie.CookieSpec;
-import org.apache.http.cookie.MalformedCookieException;
-import org.apache.http.cookie.SM;
+import org.apache.http.cookie.*;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Args;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * Response interceptor that populates the current {@link CookieStore} with data
@@ -57,7 +48,7 @@ import org.apache.http.util.Args;
 @Contract(threading = ThreadingBehavior.IMMUTABLE)
 public class ResponseProcessCookies implements HttpResponseInterceptor {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     public ResponseProcessCookies() {
         super();
@@ -119,17 +110,17 @@ public class ResponseProcessCookies implements HttpResponseInterceptor {
                             this.log.debug("Cookie accepted [" + formatCooke(cookie) + "]");
                         }
                     } catch (final MalformedCookieException ex) {
-                        if (this.log.isWarnEnabled()) {
+//                        if (this.log.isWarnEnabled()) {
                             this.log.warn("Cookie rejected [" + formatCooke(cookie) + "] "
                                     + ex.getMessage());
-                        }
+//                        }
                     }
                 }
             } catch (final MalformedCookieException ex) {
-                if (this.log.isWarnEnabled()) {
+//                if (this.log.isWarnEnabled()) {
                     this.log.warn("Invalid cookie header: \""
                             + header + "\". " + ex.getMessage());
-                }
+//                }
             }
         }
     }

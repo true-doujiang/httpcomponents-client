@@ -31,8 +31,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+//import org.apache.commons.logging.Log;
+//import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
@@ -53,6 +53,7 @@ import org.apache.http.client.utils.URIUtils;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Args;
 import org.apache.http.util.Asserts;
+import org.apache.log4j.Logger;
 
 /**
  * Default implementation of {@link RedirectStrategy}. This strategy honors the restrictions
@@ -72,7 +73,9 @@ import org.apache.http.util.Asserts;
 @Contract(threading = ThreadingBehavior.IMMUTABLE)
 public class DefaultRedirectStrategy implements RedirectStrategy {
 
-    private final Log log = LogFactory.getLog(getClass());
+//    private final Log log = LogFactory.getLog(getClass());
+
+    private final Logger log = Logger.getLogger(getClass());
 
     public static final int SC_PERMANENT_REDIRECT = 308;
 

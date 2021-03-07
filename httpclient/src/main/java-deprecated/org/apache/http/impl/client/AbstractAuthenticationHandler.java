@@ -27,16 +27,6 @@
 
 package org.apache.http.impl.client;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.FormattedHeader;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -53,6 +43,9 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Asserts;
 import org.apache.http.util.CharArrayBuffer;
+import org.apache.log4j.Logger;
+
+import java.util.*;
 
 /**
  * Base class for {@link AuthenticationHandler} implementations.
@@ -65,7 +58,7 @@ import org.apache.http.util.CharArrayBuffer;
 @Contract(threading = ThreadingBehavior.IMMUTABLE)
 public abstract class AbstractAuthenticationHandler implements AuthenticationHandler {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     private static final List<String> DEFAULT_SCHEME_PRIORITY =
         Collections.unmodifiableList(Arrays.asList(new String[] {
@@ -167,10 +160,10 @@ public abstract class AbstractAuthenticationHandler implements AuthenticationHan
                     authScheme = registry.getAuthScheme(id, response.getParams());
                     break;
                 } catch (final IllegalStateException e) {
-                    if (this.log.isWarnEnabled()) {
+//                    if (this.log.isWarnEnabled()) {
                         this.log.warn("Authentication scheme " + id + " not supported");
                         // Try again
-                    }
+//                    }
                 }
             } else {
                 if (this.log.isDebugEnabled()) {

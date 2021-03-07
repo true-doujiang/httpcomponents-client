@@ -27,6 +27,25 @@
 
 package org.apache.http.impl.conn;
 
+import org.apache.http.HttpClientConnection;
+import org.apache.http.HttpHost;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.config.ConnectionConfig;
+import org.apache.http.config.Lookup;
+import org.apache.http.config.SocketConfig;
+import org.apache.http.conn.*;
+import org.apache.http.conn.routing.HttpRoute;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
+import org.apache.http.protocol.HttpContext;
+import org.apache.log4j.Logger;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -34,29 +53,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpClientConnection;
-import org.apache.http.HttpHost;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.config.ConnectionConfig;
-import org.apache.http.config.Lookup;
-import org.apache.http.config.SocketConfig;
-import org.apache.http.conn.ConnectionPoolTimeoutException;
-import org.apache.http.conn.ConnectionRequest;
-import org.apache.http.conn.DnsResolver;
-import org.apache.http.conn.SchemePortResolver;
-import org.apache.http.conn.ManagedHttpClientConnection;
-import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
-import org.apache.http.protocol.HttpContext;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 /**
  * {@link PoolingHttpClientConnectionManager} tests.
@@ -96,7 +92,7 @@ public class TestPoolingHttpClientConnectionManager {
         final HttpHost target = new HttpHost("localhost", 80);
         final HttpRoute route = new HttpRoute(target);
 
-        final CPoolEntry entry = new CPoolEntry(LogFactory.getLog(getClass()), "id", route, conn,
+        final CPoolEntry entry = new CPoolEntry(Logger.getLogger(getClass()), "id", route, conn,
                 -1, TimeUnit.MILLISECONDS);
         entry.markRouteComplete();
 
@@ -125,7 +121,7 @@ public class TestPoolingHttpClientConnectionManager {
         final HttpHost target = new HttpHost("localhost", 80);
         final HttpRoute route = new HttpRoute(target);
 
-        final CPoolEntry entry = new CPoolEntry(LogFactory.getLog(getClass()), "id", route, conn,
+        final CPoolEntry entry = new CPoolEntry(Logger.getLogger(getClass()), "id", route, conn,
                 -1, TimeUnit.MILLISECONDS);
 
         Mockito.when(future.isCancelled()).thenReturn(Boolean.FALSE);
@@ -153,7 +149,7 @@ public class TestPoolingHttpClientConnectionManager {
         final HttpHost target = new HttpHost("localhost", 80);
         final HttpRoute route = new HttpRoute(target);
 
-        final CPoolEntry entry = new CPoolEntry(LogFactory.getLog(getClass()), "id", route, conn,
+        final CPoolEntry entry = new CPoolEntry(Logger.getLogger(getClass()), "id", route, conn,
                 -1, TimeUnit.MILLISECONDS);
         entry.markRouteComplete();
 
@@ -183,7 +179,7 @@ public class TestPoolingHttpClientConnectionManager {
         final HttpHost target = new HttpHost("localhost", 80);
         final HttpRoute route = new HttpRoute(target);
 
-        final CPoolEntry entry = Mockito.spy(new CPoolEntry(LogFactory.getLog(getClass()), "id", route, conn,
+        final CPoolEntry entry = Mockito.spy(new CPoolEntry(Logger.getLogger(getClass()), "id", route, conn,
                 -1, TimeUnit.MILLISECONDS));
         entry.markRouteComplete();
 
@@ -209,7 +205,7 @@ public class TestPoolingHttpClientConnectionManager {
         final HttpHost target = new HttpHost("localhost", 80);
         final HttpRoute route = new HttpRoute(target);
 
-        final CPoolEntry entry = Mockito.spy(new CPoolEntry(LogFactory.getLog(getClass()), "id", route, conn,
+        final CPoolEntry entry = Mockito.spy(new CPoolEntry(Logger.getLogger(getClass()), "id", route, conn,
                 -1, TimeUnit.MILLISECONDS));
         entry.markRouteComplete();
 
@@ -237,7 +233,7 @@ public class TestPoolingHttpClientConnectionManager {
         final InetAddress local = InetAddress.getByAddress(new byte[]{127, 0, 0, 1});
         final HttpRoute route = new HttpRoute(target, local, true);
 
-        final CPoolEntry entry = new CPoolEntry(LogFactory.getLog(getClass()), "id", route, conn,
+        final CPoolEntry entry = new CPoolEntry(Logger.getLogger(getClass()), "id", route, conn,
                 -1, TimeUnit.MILLISECONDS);
         entry.markRouteComplete();
         Mockito.when(future.isCancelled()).thenReturn(Boolean.FALSE);
@@ -287,7 +283,7 @@ public class TestPoolingHttpClientConnectionManager {
         final InetAddress local = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
         final HttpRoute route = new HttpRoute(target, local, proxy, true);
 
-        final CPoolEntry entry = new CPoolEntry(LogFactory.getLog(getClass()), "id", route, conn,
+        final CPoolEntry entry = new CPoolEntry(Logger.getLogger(getClass()), "id", route, conn,
                 -1, TimeUnit.MILLISECONDS);
         entry.markRouteComplete();
         Mockito.when(future.isCancelled()).thenReturn(Boolean.FALSE);

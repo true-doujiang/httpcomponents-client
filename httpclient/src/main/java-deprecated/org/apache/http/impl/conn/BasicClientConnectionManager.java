@@ -27,24 +27,19 @@
 
 package org.apache.http.impl.conn;
 
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpClientConnection;
 import org.apache.http.annotation.Contract;
 import org.apache.http.annotation.ThreadingBehavior;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.ClientConnectionOperator;
-import org.apache.http.conn.ClientConnectionRequest;
-import org.apache.http.conn.ManagedClientConnection;
-import org.apache.http.conn.OperatedClientConnection;
+import org.apache.http.conn.*;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.util.Args;
 import org.apache.http.util.Asserts;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * A connection manager for a single connection. This connection manager maintains only one active
@@ -70,7 +65,7 @@ import org.apache.http.util.Asserts;
 @Deprecated
 public class BasicClientConnectionManager implements ClientConnectionManager {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     private static final AtomicLong COUNTER = new AtomicLong();
 

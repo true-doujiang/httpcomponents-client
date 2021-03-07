@@ -26,20 +26,6 @@
  */
 package org.apache.http.impl.conn.tsccm;
 
-import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.conn.ClientConnectionOperator;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.apache.http.conn.OperatedClientConnection;
@@ -49,6 +35,13 @@ import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.Args;
 import org.apache.http.util.Asserts;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 
 /**
  * A connection pool that maintains connections by route.
@@ -70,7 +63,7 @@ import org.apache.http.util.Asserts;
 @Deprecated
 public class ConnPoolByRoute extends AbstractConnPool {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     private final Lock poolLock;
 

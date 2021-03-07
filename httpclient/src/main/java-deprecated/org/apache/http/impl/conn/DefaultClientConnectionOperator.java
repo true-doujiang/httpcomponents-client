@@ -27,24 +27,11 @@
 
 package org.apache.http.impl.conn;
 
-import java.io.IOException;
-import java.net.ConnectException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpHost;
 import org.apache.http.annotation.Contract;
 import org.apache.http.annotation.ThreadingBehavior;
 import org.apache.http.client.protocol.ClientContext;
-import org.apache.http.conn.ClientConnectionOperator;
-import org.apache.http.conn.ConnectTimeoutException;
-import org.apache.http.conn.DnsResolver;
-import org.apache.http.conn.HttpInetSocketAddress;
-import org.apache.http.conn.OperatedClientConnection;
+import org.apache.http.conn.*;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeLayeredSocketFactory;
 import org.apache.http.conn.scheme.SchemeRegistry;
@@ -54,6 +41,10 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Args;
 import org.apache.http.util.Asserts;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.net.*;
 
 /**
  * Default implementation of a {@link ClientConnectionOperator}. It uses a {@link SchemeRegistry}
@@ -90,7 +81,7 @@ import org.apache.http.util.Asserts;
 @Contract(threading = ThreadingBehavior.SAFE_CONDITIONAL)
 public class DefaultClientConnectionOperator implements ClientConnectionOperator {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     /** The scheme registry for looking up socket factories. */
     protected final SchemeRegistry schemeRegistry; // @Contract(threading = ThreadingBehavior.SAFE)

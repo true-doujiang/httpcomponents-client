@@ -27,10 +27,6 @@
 
 package org.apache.http.client.protocol;
 
-import java.io.IOException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -47,6 +43,9 @@ import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Args;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
 
 /**
  * Response interceptor that adds successfully completed {@link AuthScheme}s
@@ -62,7 +61,7 @@ import org.apache.http.util.Args;
 @Deprecated
 public class ResponseAuthCache implements HttpResponseInterceptor {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     public ResponseAuthCache() {
         super();

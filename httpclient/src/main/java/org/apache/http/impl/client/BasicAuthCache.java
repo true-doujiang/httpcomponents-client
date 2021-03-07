@@ -26,17 +26,6 @@
  */
 package org.apache.http.impl.client;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpHost;
 import org.apache.http.annotation.Contract;
 import org.apache.http.annotation.ThreadingBehavior;
@@ -46,6 +35,11 @@ import org.apache.http.conn.SchemePortResolver;
 import org.apache.http.conn.UnsupportedSchemeException;
 import org.apache.http.impl.conn.DefaultSchemePortResolver;
 import org.apache.http.util.Args;
+import org.apache.log4j.Logger;
+
+import java.io.*;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Default implementation of {@link org.apache.http.client.AuthCache}. This implements
@@ -60,7 +54,8 @@ import org.apache.http.util.Args;
 @Contract(threading = ThreadingBehavior.SAFE)
 public class BasicAuthCache implements AuthCache {
 
-    private final Log log = LogFactory.getLog(getClass());
+//    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     private final Map<HttpHost, byte[]> map;
     private final SchemePortResolver schemePortResolver;
@@ -108,9 +103,9 @@ public class BasicAuthCache implements AuthCache {
                 out.close();
                 this.map.put(getKey(host), buf.toByteArray());
             } catch (final IOException ex) {
-                if (log.isWarnEnabled()) {
+//                if (log.isWarnEnabled()) {
                     log.warn("Unexpected I/O error while serializing auth scheme", ex);
-                }
+//                }
             }
         } else {
             if (log.isDebugEnabled()) {
@@ -131,14 +126,14 @@ public class BasicAuthCache implements AuthCache {
                 in.close();
                 return authScheme;
             } catch (final IOException ex) {
-                if (log.isWarnEnabled()) {
+//                if (log.isWarnEnabled()) {
                     log.warn("Unexpected I/O error while de-serializing auth scheme", ex);
-                }
+//                }
                 return null;
             } catch (final ClassNotFoundException ex) {
-                if (log.isWarnEnabled()) {
+//                if (log.isWarnEnabled()) {
                     log.warn("Unexpected error while de-serializing auth scheme", ex);
-                }
+//                }
                 return null;
             }
         }

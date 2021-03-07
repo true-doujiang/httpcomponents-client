@@ -26,6 +26,13 @@
  */
 package org.apache.http.impl.conn.tsccm;
 
+import org.apache.http.conn.ConnectionPoolTimeoutException;
+import org.apache.http.conn.OperatedClientConnection;
+import org.apache.http.conn.routing.HttpRoute;
+import org.apache.http.impl.conn.IdleConnectionHandler;
+import org.apache.http.util.Args;
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
@@ -35,14 +42,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.conn.ConnectionPoolTimeoutException;
-import org.apache.http.conn.OperatedClientConnection;
-import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.impl.conn.IdleConnectionHandler;
-import org.apache.http.util.Args;
 
 /**
  * An abstract connection pool.
@@ -58,7 +57,7 @@ import org.apache.http.util.Args;
 @Deprecated
 public abstract class AbstractConnPool {
 
-    private final Log log;
+    private final Logger log;
 
     /**
      * The global lock for this pool.
@@ -83,7 +82,7 @@ public abstract class AbstractConnPool {
      */
     protected AbstractConnPool() {
         super();
-        this.log = LogFactory.getLog(getClass());
+        this.log = Logger.getLogger(getClass());
         this.leasedConnections = new HashSet<BasicPoolEntry>();
         this.idleConnHandler = new IdleConnectionHandler();
         this.poolLock = new ReentrantLock();

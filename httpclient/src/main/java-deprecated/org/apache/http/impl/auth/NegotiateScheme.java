@@ -26,18 +26,17 @@
  */
 package org.apache.http.impl.auth;
 
-import java.io.IOException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.Credentials;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Args;
+import org.apache.log4j.Logger;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.Oid;
+
+import java.io.IOException;
 
 /**
  * SPNEGO (Simple and Protected GSSAPI Negotiation Mechanism) authentication
@@ -50,7 +49,7 @@ import org.ietf.jgss.Oid;
 @Deprecated
 public class NegotiateScheme extends GGSSchemeBase {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     private static final String SPNEGO_OID       = "1.3.6.1.5.5.2";
     private static final String KERBEROS_OID     = "1.2.840.113554.1.2.2";

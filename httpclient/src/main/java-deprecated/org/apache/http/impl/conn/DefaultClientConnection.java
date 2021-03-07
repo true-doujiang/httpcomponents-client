@@ -27,23 +27,7 @@
 
 package org.apache.http.impl.conn;
 
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.Header;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpResponseFactory;
+import org.apache.http.*;
 import org.apache.http.conn.ManagedHttpClientConnection;
 import org.apache.http.conn.OperatedClientConnection;
 import org.apache.http.impl.SocketHttpClientConnection;
@@ -55,6 +39,15 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Args;
+import org.apache.log4j.Logger;
+
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Default implementation of an operated client connection.
@@ -67,9 +60,9 @@ import org.apache.http.util.Args;
 public class DefaultClientConnection extends SocketHttpClientConnection
     implements OperatedClientConnection, ManagedHttpClientConnection, HttpContext {
 
-    private final Log log = LogFactory.getLog(getClass());
-    private final Log headerLog = LogFactory.getLog("org.apache.http.headers");
-    private final Log wireLog = LogFactory.getLog("org.apache.http.wire");
+    private final Logger log = Logger.getLogger(getClass());
+    private final Logger headerLog = Logger.getLogger("org.apache.http.headers");
+    private final Logger wireLog = Logger.getLogger("org.apache.http.wire");
 
     /** The unconnected socket */
     private volatile Socket socket;

@@ -29,8 +29,8 @@ package org.apache.http.impl.execchain;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+//import org.apache.commons.logging.Log;
+//import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpException;
 import org.apache.http.NoHttpResponseException;
@@ -44,6 +44,7 @@ import org.apache.http.client.methods.HttpRequestWrapper;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.util.Args;
+import org.apache.log4j.Logger;
 
 /**
  * Request executor in the request execution chain that is responsible
@@ -60,7 +61,10 @@ import org.apache.http.util.Args;
 @Contract(threading = ThreadingBehavior.IMMUTABLE_CONDITIONAL)
 public class RetryExec implements ClientExecChain {
 
-    private final Log log = LogFactory.getLog(getClass());
+//    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
+
+
 
     // 执行器
     private final ClientExecChain requestExecutor;

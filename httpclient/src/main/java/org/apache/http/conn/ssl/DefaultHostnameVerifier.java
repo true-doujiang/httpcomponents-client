@@ -27,16 +27,13 @@
 
 package org.apache.http.conn.ssl;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
+import org.apache.http.annotation.Contract;
+import org.apache.http.annotation.ThreadingBehavior;
+import org.apache.http.conn.util.DnsUtils;
+import org.apache.http.conn.util.DomainType;
+import org.apache.http.conn.util.InetAddressUtils;
+import org.apache.http.conn.util.PublicSuffixMatcher;
+import org.apache.log4j.Logger;
 
 import javax.naming.InvalidNameException;
 import javax.naming.NamingException;
@@ -49,15 +46,12 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import javax.security.auth.x500.X500Principal;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.annotation.Contract;
-import org.apache.http.annotation.ThreadingBehavior;
-import org.apache.http.conn.util.DnsUtils;
-import org.apache.http.conn.util.DomainType;
-import org.apache.http.conn.util.InetAddressUtils;
-import org.apache.http.conn.util.PublicSuffixMatcher;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.util.*;
 
 /**
  * Default {@link javax.net.ssl.HostnameVerifier} implementation.
@@ -79,7 +73,7 @@ public final class DefaultHostnameVerifier implements HostnameVerifier {
 
     }
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     private final PublicSuffixMatcher publicSuffixMatcher;
 

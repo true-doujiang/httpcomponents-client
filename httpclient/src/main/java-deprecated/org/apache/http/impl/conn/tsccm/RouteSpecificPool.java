@@ -26,19 +26,18 @@
  */
 package org.apache.http.impl.conn.tsccm;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.ListIterator;
-import java.util.Queue;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.conn.OperatedClientConnection;
 import org.apache.http.conn.params.ConnPerRoute;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.util.Args;
 import org.apache.http.util.Asserts;
 import org.apache.http.util.LangUtils;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.ListIterator;
+import java.util.Queue;
 
 
 /**
@@ -53,7 +52,7 @@ import org.apache.http.util.LangUtils;
 @Deprecated
 public class RouteSpecificPool {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     /** The route this pool is for. */
     protected final HttpRoute route; //Immutable

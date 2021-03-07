@@ -27,24 +27,12 @@
 
 package org.apache.http.impl.client;
 
-import java.util.LinkedList;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Queue;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.annotation.Contract;
 import org.apache.http.annotation.ThreadingBehavior;
-import org.apache.http.auth.AuthOption;
-import org.apache.http.auth.AuthScheme;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.AuthenticationException;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.MalformedChallengeException;
+import org.apache.http.auth.*;
 import org.apache.http.client.AuthCache;
 import org.apache.http.client.AuthenticationHandler;
 import org.apache.http.client.AuthenticationStrategy;
@@ -53,6 +41,12 @@ import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Args;
+import org.apache.log4j.Logger;
+
+import java.util.LinkedList;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Queue;
 
 /**
  * @deprecated (4.2) do not use
@@ -61,7 +55,7 @@ import org.apache.http.util.Args;
 @Deprecated
 class AuthenticationStrategyAdaptor implements AuthenticationStrategy {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     private final AuthenticationHandler handler;
 
@@ -109,9 +103,9 @@ class AuthenticationStrategyAdaptor implements AuthenticationStrategy {
         try {
             authScheme = this.handler.selectScheme(challenges, response, context);
         } catch (final AuthenticationException ex) {
-            if (this.log.isWarnEnabled()) {
+//            if (this.log.isWarnEnabled()) {
                 this.log.warn(ex.getMessage(), ex);
-            }
+//            }
             return options;
         }
         final String id = authScheme.getSchemeName();

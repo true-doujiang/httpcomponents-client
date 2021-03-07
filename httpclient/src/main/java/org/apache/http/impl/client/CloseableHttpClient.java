@@ -31,8 +31,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+//import org.apache.commons.logging.Log;
+//import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
@@ -47,6 +47,7 @@ import org.apache.http.client.utils.URIUtils;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Args;
 import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Base implementation of {@link HttpClient} that also implements {@link Closeable}.
@@ -56,7 +57,8 @@ import org.apache.http.util.EntityUtils;
 @Contract(threading = ThreadingBehavior.SAFE)
 public abstract class CloseableHttpClient implements HttpClient, Closeable {
 
-    private final Log log = LogFactory.getLog(getClass());
+//    private final Log log = LogFactory.getLog(getClass());
+    private final Logger log = Logger.getLogger(getClass());
 
     /**
      * 抽象方法 有具体子类实现
