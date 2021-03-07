@@ -181,7 +181,7 @@ public class PoolingHttpClientConnectionManager
         InternalConnectionFactory connectionFactory = new InternalConnectionFactory(this.configData, connFactory);
         // 每个router默认最大2个链接
         this.pool = new CPool(connectionFactory, 2, 20, timeToLive, timeUnit);
-        System.out.println("PoolingHttpClientConnectionManager() CPool = " + pool);
+        log.info("PoolingHttpClientConnectionManager() 初始化ing 需要CPool: " + pool);
 
         this.pool.setValidateAfterInactivity(2000);
 

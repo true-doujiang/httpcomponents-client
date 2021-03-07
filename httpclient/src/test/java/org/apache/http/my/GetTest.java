@@ -1,13 +1,15 @@
 package org.apache.http.my;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.RequestLine;
+import org.apache.http.*;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.Configurable;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.protocol.HttpProcessor;
+import org.apache.http.protocol.ImmutableHttpProcessor;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 
@@ -25,9 +27,15 @@ public class GetTest {
                 .disableAuthCaching()
                 .disableRedirectHandling()
                 .disableDefaultUserAgent()
+
+                //.setHttpProcessor(请求响应拦截器集合)  不要自己设置, build()方法中会添加的
                 .build();
 
-        log.warn("httpClient: " + httpClient);
+        if (httpClient instanceof Configurable) {
+            RequestConfig config = ((Configurable) httpClient).getConfig();
+            System.out.println("main config = " + config);
+        }
+
         try {
 //            HttpGet httpGet = new HttpGet("http://www.baidu.com/");
             HttpGet httpGet = new HttpGet("http://localhost:8080/test/get?userName=333");
@@ -40,6 +48,9 @@ public class GetTest {
             RequestLine requestLine = httpGet.getRequestLine();
             ProtocolVersion protocolVersion = httpGet.getProtocolVersion();
             RequestConfig config = httpGet.getConfig();
+
+
+
 
             CloseableHttpResponse response = null;
             response = httpClient.execute(httpGet);

@@ -1188,7 +1188,7 @@ public class HttpClientBuilder {
         // execChain 中也绑定了HttpProcessor
         // ProtocolExec 中也绑定HttpProcessor
         execChain = new ProtocolExec(execChain, httpprocessorCopy);
-        //
+        // 原封不动的返回 你牛逼??
         execChain = decorateProtocolExec(execChain);
 
         // Add request retry executor, if not disabled
@@ -1313,6 +1313,7 @@ public class HttpClientBuilder {
             });
         }
 
+        // 添加个默认配置类,用户代码中配置好set进来或者 get到这个默认配置在使用是一样的
         RequestConfig defaultRequestConfigCopy = defaultRequestConfig != null
                 ? defaultRequestConfig : RequestConfig.DEFAULT;
 

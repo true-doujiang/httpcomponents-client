@@ -36,8 +36,12 @@ import org.apache.http.client.config.RequestConfig;
  */
 public interface Configurable {
 
+
+
     /**
      * Returns actual request configuration.
+     *
+     * 这叫啥设计模式  就为了获取confi也要单独定义一个接口：  哦  应该是说这个类是可配置的意思吧
      */
     RequestConfig getConfig();
 

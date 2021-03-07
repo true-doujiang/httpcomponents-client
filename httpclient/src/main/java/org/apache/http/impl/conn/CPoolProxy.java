@@ -48,6 +48,7 @@ import org.apache.http.protocol.HttpContext;
  */
 class CPoolProxy implements ManagedHttpClientConnection, HttpContext {
 
+    // 注意这里用了 volatile修饰
     // 里面包含了 connection
     private volatile CPoolEntry poolEntry;
 

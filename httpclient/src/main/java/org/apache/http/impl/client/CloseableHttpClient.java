@@ -62,6 +62,8 @@ public abstract class CloseableHttpClient implements HttpClient, Closeable {
 
     /**
      * 抽象方法 有具体子类实现
+     *
+     * InternalHttpClient 一般都是用的这个实现类
      */
     protected abstract CloseableHttpResponse doExecute(HttpHost target, HttpRequest request,
             HttpContext context) throws IOException, ClientProtocolException;
@@ -85,17 +87,25 @@ public abstract class CloseableHttpClient implements HttpClient, Closeable {
             final HttpUriRequest request,
             final HttpContext context) throws IOException, ClientProtocolException {
         Args.notNull(request, "HTTP request");
+        // 解析出一个 HttpHost
         HttpHost httpHost = determineTarget(request);
+        // InternalHttpClient实现该抽象方法
         return doExecute(httpHost, request, context);
     }
 
+    /**
+     * 解析出一个 HttpHost
+     */
     private static HttpHost determineTarget(final HttpUriRequest request) throws ClientProtocolException {
         // A null target may be acceptable if there is a default target.
         // Otherwise, the null target is detected in the director.
         HttpHost target = null;
 
+        // 有个 absolute的就替换成absolute的，否则就会抛异常
         final URI requestURI = request.getURI();
+        // 判断scheme是否为null
         if (requestURI.isAbsolute()) {
+            // 解析出一个 HttpHost
             target = URIUtils.extractHost(requestURI);
             if (target == null) {
                 throw new ClientProtocolException("URI does not specify a valid host name: " + requestURI);

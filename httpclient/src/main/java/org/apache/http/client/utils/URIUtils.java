@@ -423,6 +423,7 @@ public class URIUtils {
         HttpHost target = null;
 
         if (uri.isAbsolute()) {
+
             int port = uri.getPort(); // may be overridden later
             String host = uri.getHost();
 
@@ -475,6 +476,7 @@ public class URIUtils {
 
             if (!TextUtils.isBlank(host)) {
                 try {
+                    //
                     target = new HttpHost(host, port, scheme);
                 } catch (final IllegalArgumentException ignore) {
 

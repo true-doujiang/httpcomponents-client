@@ -81,11 +81,16 @@ class InternalHttpClient extends CloseableHttpClient implements Configurable {
 //    private final Log log = LogFactory.getLog(getClass());
     private final Logger log = Logger.getLogger(getClass());
 
+    // 执行链的下一个之心器
     private final ClientExecChain execChain;
+    // PoolingHttpClientConnectionManager
     private final HttpClientConnectionManager connManager;
+
     private final HttpRoutePlanner routePlanner;
+
     private final Lookup<CookieSpecProvider> cookieSpecRegistry;
     private final Lookup<AuthSchemeProvider> authSchemeRegistry;
+
     private final CookieStore cookieStore;
     private final CredentialsProvider credentialsProvider;
     //
@@ -94,6 +99,8 @@ class InternalHttpClient extends CloseableHttpClient implements Configurable {
 
     /**
      * default constructor
+     *
+     * @see org.apache.http.impl.client.HttpClientBuilder#build 调用
      */
     public InternalHttpClient(
             final ClientExecChain execChain,
@@ -131,12 +138,13 @@ class InternalHttpClient extends CloseableHttpClient implements Configurable {
         if (host == null) {
             host = (HttpHost) request.getParams().getParameter(ClientPNames.DEFAULT_HOST);
         }
-        return this.routePlanner.determineRoute(host, request, context);
+        HttpRoute httpRoute = this.routePlanner.determineRoute(host, request, context);
+        return httpRoute;
     }
 
 
     /**
-     *
+     * 给httpClientContext底册的map中添加
      */
     private void setupContext(final HttpClientContext context) {
         if (context.getAttribute(HttpClientContext.TARGET_AUTH_STATE) == null) {
@@ -163,7 +171,9 @@ class InternalHttpClient extends CloseableHttpClient implements Configurable {
     }
 
     /**
-     *
+     * 创建一个HttpContext
+     * 创建一个HttRoute
+     * execChain 真正干活的
      */
     @Override
     protected CloseableHttpResponse doExecute(
@@ -180,8 +190,8 @@ class InternalHttpClient extends CloseableHttpClient implements Configurable {
 
         try {
             //
-            final HttpRequestWrapper wrapper = HttpRequestWrapper.wrap(request, target);
-
+            final HttpRequestWrapper requestWrapper = HttpRequestWrapper.wrap(request, target);
+            // 为本次请求创建一个httpContext 底层就是个ConcurrentHashMap
             HttpContext httpContext = context != null ? context : new BasicHttpContext();
             final HttpClientContext httpClientContext = HttpClientContext.adapt(httpContext);
 
@@ -201,15 +211,17 @@ class InternalHttpClient extends CloseableHttpClient implements Configurable {
                 }
             }
 
+            // 一路走下来 config = null
             if (config != null) {
                 httpClientContext.setRequestConfig(config);
             }
 
             // 给httpClientContext底册的map中添加
             setupContext(httpClientContext);
-            final HttpRoute route = determineRoute(target, wrapper, httpClientContext);
+            //
+            final HttpRoute route = determineRoute(target, requestWrapper, httpClientContext);
 
-            return this.execChain.execute(route, wrapper, httpClientContext, execAware);
+            return this.execChain.execute(route, requestWrapper, httpClientContext, execAware);
         } catch (final HttpException httpException) {
             throw new ClientProtocolException(httpException);
         }

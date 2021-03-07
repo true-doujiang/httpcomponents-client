@@ -81,11 +81,13 @@ public class ProtocolExec implements ClientExecChain {
 
     //
     private final ClientExecChain requestExecutor;
-    //
+    // 请求+响应拦截器  org.apache.http.impl.client.HttpClientBuilder.build() 给初始化的
     private final HttpProcessor httpProcessor;
 
     /**
      * default constructor
+     * 调用方  org.apache.http.impl.client.HttpClientBuilder.build()
+     *
      */
     public ProtocolExec(final ClientExecChain requestExecutor, final HttpProcessor httpProcessor) {
         Args.notNull(requestExecutor, "HTTP client request executor");
@@ -110,6 +112,9 @@ public class ProtocolExec implements ClientExecChain {
         }
     }
 
+    /**
+     *
+     */
     @Override
     public CloseableHttpResponse execute(
             final HttpRoute route,
@@ -136,10 +141,18 @@ public class ProtocolExec implements ClientExecChain {
             }
 
         }
+
         request.setURI(uri);
 
+        boolean f = context.getRequestConfig().isNormalizeUri();
+
+        /*
+         *  GET http://localhost:8080/test/get?userName=333 HTTP/1.1
+         *  转换成
+         *  GET /test/get?userName=333 HTTP/1.1
+         */
         // Re-write request URI if needed
-        rewriteRequestURI(request, route, context.getRequestConfig().isNormalizeUri());
+        rewriteRequestURI(request, route, f);
 
         final HttpParams params = request.getParams();
         HttpHost virtualHost = (HttpHost) params.getParameter(ClientPNames.VIRTUAL_HOST);
@@ -155,6 +168,7 @@ public class ProtocolExec implements ClientExecChain {
             }
         }
 
+        // httpHost为毛不传过来 还要这里在根据信息创建出来???
         HttpHost target = null;
         if (virtualHost != null) {
             target = virtualHost;
@@ -188,11 +202,13 @@ public class ProtocolExec implements ClientExecChain {
         context.setAttribute(HttpCoreContext.HTTP_TARGET_HOST, target);
         context.setAttribute(HttpClientContext.HTTP_ROUTE, route);
         context.setAttribute(HttpCoreContext.HTTP_REQUEST, request);
+
         // 调用请求拦截器
         this.httpProcessor.process(request, context);
 
         //
         final CloseableHttpResponse response = this.requestExecutor.execute(route, request, context, execAware);
+
         try {
             // Run response protocol interceptors
             context.setAttribute(HttpCoreContext.HTTP_RESPONSE, response);

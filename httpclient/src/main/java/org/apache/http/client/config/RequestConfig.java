@@ -67,6 +67,7 @@ public class RequestConfig implements Cloneable {
     private final int connectTimeout;
     private final int socketTimeout;
     private final boolean contentCompressionEnabled;
+    //
     private final boolean normalizeUri;
 
     /**

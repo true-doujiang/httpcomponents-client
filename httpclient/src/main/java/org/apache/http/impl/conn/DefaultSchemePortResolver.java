@@ -44,6 +44,9 @@ public class DefaultSchemePortResolver implements SchemePortResolver {
     //
     public static final DefaultSchemePortResolver INSTANCE = new DefaultSchemePortResolver();
 
+    /**
+     * 根据协议方案返回主机的实际端口
+     */
     @Override
     public int resolve(final HttpHost host) throws UnsupportedSchemeException {
         Args.notNull(host, "HTTP host");
@@ -51,7 +54,9 @@ public class DefaultSchemePortResolver implements SchemePortResolver {
         if (port > 0) {
             return port;
         }
+
         final String name = host.getSchemeName();
+
         if (name.equalsIgnoreCase("http")) {
             return 80;
         } else if (name.equalsIgnoreCase("https")) {

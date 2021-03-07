@@ -60,7 +60,10 @@ public final class HttpRoute implements RouteInfo, Cloneable {
      */
     private final InetAddress localAddress;
 
-    /** The proxy servers, if any. Never null. */
+    /**
+     *  The proxy servers, if any. Never null.
+     *  代理主机信息
+     */
     private final List<HttpHost> proxyChain;
 
     /** Whether the the route is tunnelled through the proxy. */
@@ -72,8 +75,17 @@ public final class HttpRoute implements RouteInfo, Cloneable {
     /** Whether the route is (supposed to be) secure. */
     private final boolean secure;
 
-    private HttpRoute(final HttpHost target, final InetAddress local, final List<HttpHost> proxies,
-                     final boolean secure, final TunnelType tunnelled, final LayerType layered) {
+
+    /**
+     * 私有构造器
+     */
+    private HttpRoute(final HttpHost target,
+                      final InetAddress local,
+                      final List<HttpHost> proxies,
+                      final boolean secure,
+                      final TunnelType tunnelled,
+                      final LayerType layered) {
+
         Args.notNull(target, "Target host");
         this.targetHost = normalize(target);
         this.localAddress = local;
@@ -111,8 +123,7 @@ public final class HttpRoute implements RouteInfo, Cloneable {
         final String schemeName = target.getSchemeName();
         return address != null
                         ? new HttpHost(address, getDefaultPort(schemeName), schemeName)
-                        : new HttpHost(target.getHostName(), getDefaultPort(schemeName),
-                                        schemeName);
+                        : new HttpHost(target.getHostName(), getDefaultPort(schemeName), schemeName);
     }
 
     /**
@@ -332,7 +343,9 @@ public final class HttpRoute implements RouteInfo, Cloneable {
             cab.append(this.localAddress);
             cab.append("->");
         }
+
         cab.append('{');
+
         if (this.tunnelled == TunnelType.TUNNELLED) {
             cab.append('t');
         }
@@ -342,13 +355,16 @@ public final class HttpRoute implements RouteInfo, Cloneable {
         if (this.secure) {
             cab.append('s');
         }
+
         cab.append("}->");
+
         if (this.proxyChain != null) {
             for (final HttpHost aProxyChain : this.proxyChain) {
                 cab.append(aProxyChain);
                 cab.append("->");
             }
         }
+
         cab.append(this.targetHost);
         return cab.toString();
     }

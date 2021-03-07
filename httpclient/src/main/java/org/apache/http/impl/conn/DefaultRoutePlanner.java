@@ -53,10 +53,11 @@ import org.apache.http.util.Args;
 @Contract(threading = ThreadingBehavior.IMMUTABLE_CONDITIONAL)
 public class DefaultRoutePlanner implements HttpRoutePlanner {
 
+    //
     private final SchemePortResolver schemePortResolver;
 
     /**
-     * constructor
+     * default constructor
      */
     public DefaultRoutePlanner(final SchemePortResolver schemePortResolver) {
         super();
@@ -64,6 +65,9 @@ public class DefaultRoutePlanner implements HttpRoutePlanner {
                 ? schemePortResolver : DefaultSchemePortResolver.INSTANCE;
     }
 
+    /**
+     * 解析出一个route
+     */
     @Override
     public HttpRoute determineRoute(
             final HttpHost host,
@@ -74,11 +78,14 @@ public class DefaultRoutePlanner implements HttpRoutePlanner {
         if (host == null) {
             throw new ProtocolException("Target host is not specified");
         }
+
         final HttpClientContext clientContext = HttpClientContext.adapt(context);
         final RequestConfig config = clientContext.getRequestConfig();
         final InetAddress local = config.getLocalAddress();
+
         HttpHost proxy = config.getProxy();
         if (proxy == null) {
+            // 空实现 返回null
             proxy = determineProxy(host, request, context);
         }
 
@@ -99,8 +106,10 @@ public class DefaultRoutePlanner implements HttpRoutePlanner {
         final boolean secure = target.getSchemeName().equalsIgnoreCase("https");
 
         if (proxy == null) {
+            // http
             return new HttpRoute(target, local, secure);
         } else {
+            // https
             return new HttpRoute(target, local, proxy, secure);
         }
 

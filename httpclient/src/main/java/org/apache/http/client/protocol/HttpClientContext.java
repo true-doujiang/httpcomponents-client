@@ -134,17 +134,21 @@ public class HttpClientContext extends HttpCoreContext {
     public static final String REQUEST_CONFIG = "http.request-config";
 
     /**
-     *
+     * HttpCoreContext也有一段同样的逻辑
      */
     public static HttpClientContext adapt(final HttpContext context) {
-        return context instanceof HttpClientContext
-                        ? (HttpClientContext) context
-                        : new HttpClientContext(context);
+        if (context instanceof HttpClientContext) {
+            return (HttpClientContext) context;
+        } else {
+            return new HttpClientContext(context);
+        }
+//        return context instanceof HttpClientContext
+//                        ? (HttpClientContext) context
+//                        : new HttpClientContext(context);
     }
 
     /**
      *
-     * @return
      */
     public static HttpClientContext create() {
         BasicHttpContext basicHttpContext = new BasicHttpContext();
@@ -152,15 +156,19 @@ public class HttpClientContext extends HttpCoreContext {
     }
 
     /**
-     *
+     * default constructor
+     */
+    public HttpClientContext() {
+        super();
+    }
+
+    /**
+     * constructor
      */
     public HttpClientContext(final HttpContext context) {
         super(context);
     }
 
-    public HttpClientContext() {
-        super();
-    }
 
     public RouteInfo getHttpRoute() {
         return getAttribute(HTTP_ROUTE, HttpRoute.class);

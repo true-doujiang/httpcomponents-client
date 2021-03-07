@@ -45,7 +45,7 @@ import org.apache.http.util.Args;
 /**
  * A wrapper class for {@link HttpRequest} that can be used to change properties of the current
  * request without modifying the original object.
- *
+ * {@link HttpRequest}的包装器类，可用于在不修改原始对象的情况下更改当前请求的属性
  * @since 4.3
  */
 @SuppressWarnings("deprecation")

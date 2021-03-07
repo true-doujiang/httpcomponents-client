@@ -100,6 +100,7 @@ public class MainClientExec implements ClientExecChain {
 
     private final ConnectionReuseStrategy reuseStrategy;
     private final ConnectionKeepAliveStrategy keepAliveStrategy;
+    //
     private final HttpProcessor proxyHttpProcessor;
     private final AuthenticationStrategy targetAuthStrategy;
     private final AuthenticationStrategy proxyAuthStrategy;
@@ -161,6 +162,7 @@ public class MainClientExec implements ClientExecChain {
             final HttpRequestWrapper request,
             final HttpClientContext context,
             final HttpExecutionAware execAware) throws IOException, HttpException {
+
         Args.notNull(route, "HTTP route");
         Args.notNull(request, "HTTP request");
         Args.notNull(context, "HTTP context");
@@ -211,7 +213,8 @@ public class MainClientExec implements ClientExecChain {
             managedConn = connRequest.get(timeout > 0 ? timeout : 0, TimeUnit.MILLISECONDS);
 
             //if (managedConn instanceof CPoolProxy)
-            System.out.println(Thread.currentThread().getName() + " MainClientExec.HttpClientConnection = " + managedConn);
+//            System.out.println(Thread.currentThread().getName() + " MainClientExec.HttpClientConnection = " + managedConn);
+            log.info(connRequest + " 获取到一个连接 managedConn=" + managedConn);
 
         } catch(final InterruptedException interrupted) {
             Thread.currentThread().interrupt();
@@ -258,7 +261,11 @@ public class MainClientExec implements ClientExecChain {
                     throw new RequestAbortedException("Request aborted");
                 }
 
-                if (!managedConn.isOpen()) {
+                //  这里判断 managedConn有没有绑定好了socket
+                // 上面拿到的 managedConn可能是线程池中拿到的复用连接
+                boolean isOpen = managedConn.isOpen();
+                log.info("managedConn isOpen = " + isOpen);
+                if (!isOpen) {
                     this.log.debug("Opening connection " + route);
                     try {
                         // 创建一个socket 并连接到服务端
@@ -594,6 +601,7 @@ public class MainClientExec implements ClientExecChain {
             final HttpRoute route,
             final HttpResponse response,
             final HttpClientContext context) {
+
         final RequestConfig config = context.getRequestConfig();
         if (config.isAuthenticationEnabled()) {
             HttpHost target = context.getTargetHost();
