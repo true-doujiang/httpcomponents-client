@@ -88,6 +88,7 @@ public class PoolingHttpClientConnectionManager
     //
     implements HttpClientConnectionManager, ConnPoolControl<HttpRoute>, Closeable {
 
+
     private final Logger log = Logger.getLogger(getClass());
 
     private final ConfigData configData;
@@ -149,8 +150,8 @@ public class PoolingHttpClientConnectionManager
     }
 
     /**
-     * org.apache.http.impl.client.HttpClientBuilder#build() 调用
-     * connFactory=schemePortResolver=dnsResolvernull
+     * @see org.apache.http.impl.client.HttpClientBuilder#build() 调用
+     * connFactory = schemePortResolver = dnsResolver = null
      */
     public PoolingHttpClientConnectionManager(
             final Registry<ConnectionSocketFactory> socketFactoryRegistry,
@@ -182,7 +183,7 @@ public class PoolingHttpClientConnectionManager
         // 每个router默认最大2个链接
         this.pool = new CPool(connectionFactory, 2, 20, timeToLive, timeUnit);
         log.info("PoolingHttpClientConnectionManager() 初始化ing 需要CPool: " + pool);
-
+        // 设置这个值
         this.pool.setValidateAfterInactivity(2000);
 
         this.connectionOperator = Args.notNull(httpClientConnectionOperator, "HttpClientConnectionOperator");
@@ -200,6 +201,7 @@ public class PoolingHttpClientConnectionManager
         super();
         this.configData = new ConfigData();
         this.pool = pool;
+        //
         DefaultHttpClientConnectionOperator operator =
                 new DefaultHttpClientConnectionOperator(socketFactoryRegistry, schemePortResolver, dnsResolver);
         this.connectionOperator = operator;
@@ -264,7 +266,10 @@ public class PoolingHttpClientConnectionManager
     }
 
     /**
-     * org.apache.http.impl.execchain.MainClientExec#execute() 真正执行的时候才会从连接池获取 http conn
+     * @see org.apache.http.impl.execchain.MainClientExec#execute 真正执行的时候会 连接池管理器 调用本方法获取一个 http conn
+     * 连接池管理器中会有一个连接池CPool
+     *
+     * 每个执行请求会调用一次本方法，并返回一个connectionRequest匿名内部类（里面包含一个future匿名内部类）
      */
     @Override
     public ConnectionRequest requestConnection(final HttpRoute route, final Object state) {
@@ -279,6 +284,7 @@ public class PoolingHttpClientConnectionManager
 
         /*
          * CPool继承AbstractConnPool中返回匿名内部类
+         * future 是 CPool中的匿名内部类，所以用到了 CPool的东西
          */
         final Future<CPoolEntry> future = this.pool.lease(route, state, null);
 
@@ -286,6 +292,8 @@ public class PoolingHttpClientConnectionManager
          * 匿名内部类 MainClientExec#execute()
          */
         ConnectionRequest connectionRequest = new ConnectionRequest() {
+
+            //private String connectionRequestId = null;
 
             @Override
             public boolean cancel() {
@@ -297,10 +305,14 @@ public class PoolingHttpClientConnectionManager
             public HttpClientConnection get(final long timeout, final TimeUnit timeUnit)
                     throws InterruptedException, ExecutionException, ConnectionPoolTimeoutException {
 
-                //获取一个conn链接                    下面一个方法
+                //获取一个conn链接就是从future的get()获取   下面一个方法
                 final HttpClientConnection conn = leaseConnection(future, timeout, timeUnit);
 
-                if (conn.isOpen()) {
+                boolean open = conn.isOpen();
+                log.info("匿名内部类 connectionRequest=" + this + " get() open= " + open);
+
+                if (open) {
+                    // 说明conn底层已经绑定了一个socket
                     final HttpHost host;
                     if (route.getProxyHost() != null) {
                         host = route.getProxyHost();
@@ -316,9 +328,7 @@ public class PoolingHttpClientConnectionManager
             }
         };
 
-        System.out.println(this
-                + " requestConnection() 创建匿名内部类 connectionRequest = " + connectionRequest);
-
+        log.info("--\r\n--requestConnection() 创建匿名内部类 connectionRequest = " + connectionRequest);
         return  connectionRequest;
     }
 
@@ -347,7 +357,7 @@ public class PoolingHttpClientConnectionManager
                 this.log.debug("Connection leased: " + format(entry) + formatStats(entry.getRoute()));
             }
 
-            //
+            // httpClientConnection: CPoolProxy
             HttpClientConnection httpClientConnection = CPoolProxy.newProxy(entry);
             return httpClientConnection;
         } catch (final TimeoutException ex) {
@@ -362,7 +372,8 @@ public class PoolingHttpClientConnectionManager
     public void releaseConnection(
             final HttpClientConnection managedConn,
             final Object state,
-            final long keepalive, final TimeUnit timeUnit) {
+            final long keepalive,
+            final TimeUnit timeUnit) {
 
         Args.notNull(managedConn, "Managed connection");
 
@@ -377,8 +388,11 @@ public class PoolingHttpClientConnectionManager
             try {
                 if (conn.isOpen()) {
                     final TimeUnit effectiveUnit = timeUnit != null ? timeUnit : TimeUnit.MILLISECONDS;
+                    //
                     entry.setState(state);
+                    //  更新过期时间
                     entry.updateExpiry(keepalive, effectiveUnit);
+
                     if (this.log.isDebugEnabled()) {
                         final String s;
                         if (keepalive > 0) {
@@ -388,10 +402,13 @@ public class PoolingHttpClientConnectionManager
                         }
                         this.log.debug("Connection " + format(entry) + " can be kept alive " + s);
                     }
+
                     conn.setSocketTimeout(0);
                 }
             } finally {
-                this.pool.release(entry, conn.isOpen() && entry.isRouteComplete());
+                boolean b = conn.isOpen() && entry.isRouteComplete();
+                this.pool.release(entry, b);
+
                 if (this.log.isDebugEnabled()) {
                     this.log.debug("Connection released: " + format(entry) + formatStats(entry.getRoute()));
                 }
@@ -409,15 +426,19 @@ public class PoolingHttpClientConnectionManager
             final int connectTimeout,
             final HttpContext context) throws IOException {
 
+        // managedConn: CPoolProxy里面包含一个CPoolEntry里面保留conn的一些信息
         Args.notNull(managedConn, "Managed Connection");
         Args.notNull(route, "HTTP route");
 
+
         final ManagedHttpClientConnection conn;
+        // 这里为什么要加锁,哪里和这里有线程安全问题 ??
         synchronized (managedConn) {
             final CPoolEntry entry = CPoolProxy.getPoolEntry(managedConn);
             // LoggingManagedHttpClientConnection
             conn = entry.getConnection();
         }
+
         final HttpHost host;
         if (route.getProxyHost() != null) {
             host = route.getProxyHost();

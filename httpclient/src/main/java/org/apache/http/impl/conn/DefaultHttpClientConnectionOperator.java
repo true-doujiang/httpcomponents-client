@@ -33,6 +33,7 @@ import java.net.InetSocketAddress;
 import java.net.NoRouteToHostException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.Arrays;
 
 //import org.apache.commons.logging.Log;
 //import org.apache.commons.logging.LogFactory;
@@ -69,25 +70,31 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
 
     private final Logger log = Logger.getLogger(getClass());
 
-    //
+    // org.apache.http.impl.client.HttpClientBuilder#build() 中一路传过来的，底层就是个Map
     private final Lookup<ConnectionSocketFactory> socketFactoryRegistry;
+    // 根据协议方案返回主机的实际端口
     private final SchemePortResolver schemePortResolver;
+    // 根据域名解析ip
     private final DnsResolver dnsResolver;
 
     /**
      * default constructor
      *
-     * org.apache.http.impl.conn.PoolingHttpClientConnectionManager#PoolingHttpClientConnectionManager() 调用
+     * @see org.apache.http.impl.conn.PoolingHttpClientConnectionManager#PoolingHttpClientConnectionManager() 调用
      */
     public DefaultHttpClientConnectionOperator(
             final Lookup<ConnectionSocketFactory> socketFactoryRegistry,
             final SchemePortResolver schemePortResolver,
             final DnsResolver dnsResolver) {
+
         super();
+
         Args.notNull(socketFactoryRegistry, "Socket factory registry");
+        // org.apache.http.impl.client.HttpClientBuilder#build() 中一路传过来的，底层就是个Map
         this.socketFactoryRegistry = socketFactoryRegistry;
         this.schemePortResolver = schemePortResolver != null
                 ? schemePortResolver : DefaultSchemePortResolver.INSTANCE;
+
         this.dnsResolver = dnsResolver != null ? dnsResolver : SystemDefaultDnsResolver.INSTANCE;
     }
 
@@ -108,7 +115,10 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
     }
 
     /**
-     *
+     * 调用方
+     * 1.MainClientExec.establishRoute -> connect
+     * 2.see
+     * @see org.apache.http.impl.conn.PoolingHttpClientConnectionManager#connect
      */
     @Override
     public void connect(
@@ -127,16 +137,22 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
             throw new UnsupportedSchemeException(host.getSchemeName() + " protocol is not supported");
         }
 
+        // 解析对应域名定义的ip地址，可能存在多个
         final InetAddress[] addresses = host.getAddress() != null ?
                 new InetAddress[] { host.getAddress() } : this.dnsResolver.resolve(host.getHostName());
+
+        log.info("域名解析出的IP地址: " + Arrays.toString(addresses));
+
+        // 解析协议对应的端口号
         final int port = this.schemePortResolver.resolve(host);
 
         for (int i = 0; i < addresses.length; i++) {
             final InetAddress address = addresses[i];
             final boolean last = i == addresses.length - 1;
 
-            // 重要找到创建socket对象的代码了 sf:PlainConnectionSocketFactory
+            // 重要找到创建socket对象的代码了 sf:PlainConnectionSocketFactory  就是 new Socket() 返回
             Socket sock = sf.createSocket(context);
+            log.info("createSocket = " + sock);
             sock.setSoTimeout(socketConfig.getSoTimeout());
             sock.setReuseAddress(socketConfig.isSoReuseAddress());
             sock.setTcpNoDelay(socketConfig.isTcpNoDelay());
@@ -162,7 +178,7 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
             }
 
             try {
-                //
+                // 连接到服务端
                 sock = sf.connectSocket(connectTimeout, sock, host, remoteAddress, localAddress, context);
 
                 // connect 的过程，也就是新建Socket并绑定到HttpClientConnection上的过程。
@@ -171,6 +187,7 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
                     this.log.debug("Connection established " + conn);
                 }
 
+                // 只要连接上任意一个ip地址就可以了，所以连上一个就return了
                 return;
             } catch (final SocketTimeoutException ex) {
                 if (last) {
@@ -193,7 +210,7 @@ public class DefaultHttpClientConnectionOperator implements HttpClientConnection
                 this.log.debug("Connect to " + remoteAddress + " timed out. " +
                         "Connection will be retried using another IP address");
             }
-        }
+        }// for end---
     }
 
     @Override

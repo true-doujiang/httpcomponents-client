@@ -41,16 +41,23 @@ import org.apache.http.protocol.HttpCoreContext;
 
 public class DefaultClientConnectionReuseStrategy extends DefaultConnectionReuseStrategy {
 
-    public static final DefaultClientConnectionReuseStrategy INSTANCE = new DefaultClientConnectionReuseStrategy();
+    public static final DefaultClientConnectionReuseStrategy INSTANCE
+            = new DefaultClientConnectionReuseStrategy();
 
+    /**
+     *
+     * @param response
+     */
     @Override
     public boolean keepAlive(final HttpResponse response, final HttpContext context) {
 
         final HttpRequest request = (HttpRequest) context.getAttribute(HttpCoreContext.HTTP_REQUEST);
+
         if (request != null) {
             final Header[] connHeaders = request.getHeaders(HttpHeaders.CONNECTION);
             if (connHeaders.length != 0) {
-                final TokenIterator ti = new BasicTokenIterator(new BasicHeaderIterator(connHeaders, null));
+                BasicHeaderIterator iterator = new BasicHeaderIterator(connHeaders, null);
+                final TokenIterator ti = new BasicTokenIterator(iterator);
                 while (ti.hasNext()) {
                     final String token = ti.nextToken();
                     if (HTTP.CONN_CLOSE.equalsIgnoreCase(token)) {
@@ -59,6 +66,7 @@ public class DefaultClientConnectionReuseStrategy extends DefaultConnectionReuse
                 }
             }
         }
+
         return super.keepAlive(response, context);
     }
 

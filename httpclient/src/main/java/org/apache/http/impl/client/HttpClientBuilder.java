@@ -210,6 +210,7 @@ public class HttpClientBuilder {
     private int maxConnTotal = 0;
     private int maxConnPerRoute = 0;
 
+    // 最终会传到 PoolEntry中，用于计算过期时间
     private long connTimeToLive = -1;
     private TimeUnit connTimeToLiveTimeUnit = TimeUnit.MILLISECONDS;
 

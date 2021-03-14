@@ -56,6 +56,7 @@ public class DefaultManagedHttpClientConnection
         extends DefaultBHttpClientConnection
         implements ManagedHttpClientConnection, HttpContext {
 
+    //
     private final String id;
     private final Map<String, Object> attributes;
 

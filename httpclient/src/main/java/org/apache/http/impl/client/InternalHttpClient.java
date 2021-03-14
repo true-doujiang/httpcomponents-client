@@ -86,6 +86,7 @@ class InternalHttpClient extends CloseableHttpClient implements Configurable {
     // PoolingHttpClientConnectionManager
     private final HttpClientConnectionManager connManager;
 
+    // DefaultRoutePlanner
     private final HttpRoutePlanner routePlanner;
 
     private final Lookup<CookieSpecProvider> cookieSpecRegistry;
@@ -116,8 +117,10 @@ class InternalHttpClient extends CloseableHttpClient implements Configurable {
         Args.notNull(execChain, "HTTP client exec chain");
         Args.notNull(connManager, "HTTP connection manager");
         Args.notNull(routePlanner, "HTTP route planner");
+
         this.execChain = execChain;
         this.connManager = connManager;
+
         this.routePlanner = routePlanner;
         this.cookieSpecRegistry = cookieSpecRegistry;
         this.authSchemeRegistry = authSchemeRegistry;
@@ -128,7 +131,7 @@ class InternalHttpClient extends CloseableHttpClient implements Configurable {
     }
 
     /**
-     *
+     * 解析出一个 HttpRoute implements RouteInfo
      */
     private HttpRoute determineRoute(
             final HttpHost target,
@@ -138,6 +141,7 @@ class InternalHttpClient extends CloseableHttpClient implements Configurable {
         if (host == null) {
             host = (HttpHost) request.getParams().getParameter(ClientPNames.DEFAULT_HOST);
         }
+        //
         HttpRoute httpRoute = this.routePlanner.determineRoute(host, request, context);
         return httpRoute;
     }

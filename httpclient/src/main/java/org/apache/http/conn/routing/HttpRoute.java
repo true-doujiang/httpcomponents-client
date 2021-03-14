@@ -72,7 +72,9 @@ public final class HttpRoute implements RouteInfo, Cloneable {
     /** Whether the route is layered. */
     private final LayerType layered;
 
-    /** Whether the route is (supposed to be) secure. */
+    /** Whether the route is (supposed to be) secure.
+     *  是否是https协议  https:true
+     *  */
     private final boolean secure;
 
 
@@ -164,8 +166,7 @@ public final class HttpRoute implements RouteInfo, Cloneable {
      */
     public HttpRoute(final HttpHost target, final InetAddress local, final HttpHost proxy,
                      final boolean secure, final TunnelType tunnelled, final LayerType layered) {
-        this(target, local, proxy != null ? Collections.singletonList(proxy) : null,
-                secure, tunnelled, layered);
+        this(target, local, proxy != null ? Collections.singletonList(proxy) : null, secure, tunnelled, layered);
     }
 
     /**
@@ -177,10 +178,14 @@ public final class HttpRoute implements RouteInfo, Cloneable {
      *                  {@code null} for the default
      * @param secure    {@code true} if the route is (to be) secure,
      *                  {@code false} otherwise
+     *
+     *
+     *  调用方
+     *  1.org.apache.http.impl.client.InternalHttpClient#determineRoute()
+     *  2.org.apache.http.impl.conn.DefaultRoutePlanner#determineRoute()
      */
     public HttpRoute(final HttpHost target, final InetAddress local, final boolean secure) {
-        this(target, local, Collections.<HttpHost>emptyList(), secure,
-                TunnelType.PLAIN, LayerType.PLAIN);
+        this(target, local, Collections.<HttpHost>emptyList(), secure, TunnelType.PLAIN, LayerType.PLAIN);
     }
 
     /**
@@ -189,8 +194,7 @@ public final class HttpRoute implements RouteInfo, Cloneable {
      * @param target    the host to which to route
      */
     public HttpRoute(final HttpHost target) {
-        this(target, null, Collections.<HttpHost>emptyList(), false,
-                TunnelType.PLAIN, LayerType.PLAIN);
+        this(target, null, Collections.<HttpHost>emptyList(), false, TunnelType.PLAIN, LayerType.PLAIN);
     }
 
     /**
@@ -206,8 +210,7 @@ public final class HttpRoute implements RouteInfo, Cloneable {
      * @param secure    {@code true} if the route is (to be) secure,
      *                  {@code false} otherwise
      */
-    public HttpRoute(final HttpHost target, final InetAddress local, final HttpHost proxy,
-                     final boolean secure) {
+    public HttpRoute(final HttpHost target, final InetAddress local, final HttpHost proxy, final boolean secure) {
         this(target, local, Collections.singletonList(Args.notNull(proxy, "Proxy host")), secure,
              secure ? TunnelType.TUNNELLED : TunnelType.PLAIN,
              secure ? LayerType.LAYERED    : LayerType.PLAIN);
@@ -239,16 +242,25 @@ public final class HttpRoute implements RouteInfo, Cloneable {
         return this.localAddress != null ? new InetSocketAddress(this.localAddress, 0) : null;
     }
 
+    /**
+     * 返回代理主机的个数，没有代理返回1
+     */
     @Override
     public final int getHopCount() {
         return proxyChain != null ? proxyChain.size() + 1 : 1;
     }
 
+    /**
+     *
+     *
+     */
     @Override
     public final HttpHost getHopTarget(final int hop) {
         Args.notNegative(hop, "Hop index");
         final int hopcount = getHopCount();
+
         Args.check(hop < hopcount, "Hop index exceeds tracked route length");
+
         return hop < hopcount - 1 ? this.proxyChain.get(hop) : this.targetHost;
     }
 

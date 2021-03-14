@@ -34,6 +34,7 @@ import java.net.Socket;
 import org.apache.http.HttpHost;
 import org.apache.http.annotation.Contract;
 import org.apache.http.annotation.ThreadingBehavior;
+import org.apache.http.impl.conn.DefaultHttpClientConnectionOperator;
 import org.apache.http.protocol.HttpContext;
 
 /**
@@ -59,6 +60,8 @@ public class PlainConnectionSocketFactory implements ConnectionSocketFactory {
 
     /**
      * 创建socket
+     * 调用方
+     * @see DefaultHttpClientConnectionOperator#connect
      */
     @Override
     public Socket createSocket(final HttpContext context) throws IOException {
@@ -67,6 +70,7 @@ public class PlainConnectionSocketFactory implements ConnectionSocketFactory {
 
     /**
      * 连接到服务端
+     * 调用方 同上
      */
     @Override
     public Socket connectSocket(

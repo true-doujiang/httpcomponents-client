@@ -103,6 +103,7 @@ public abstract class CloseableHttpClient implements HttpClient, Closeable {
 
         // 有个 absolute的就替换成absolute的，否则就会抛异常
         final URI requestURI = request.getURI();
+
         // 判断scheme是否为null
         if (requestURI.isAbsolute()) {
             // 解析出一个 HttpHost
@@ -111,6 +112,7 @@ public abstract class CloseableHttpClient implements HttpClient, Closeable {
                 throw new ClientProtocolException("URI does not specify a valid host name: " + requestURI);
             }
         }
+
         return target;
     }
 

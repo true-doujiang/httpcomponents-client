@@ -33,6 +33,7 @@ import org.apache.http.HttpHost;
 
 /**
  * Read-only interface for route information.
+ * 路由信息的只读接口。
  *
  * @since 4.0
  */

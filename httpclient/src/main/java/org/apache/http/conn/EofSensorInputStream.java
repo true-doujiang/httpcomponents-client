@@ -77,8 +77,7 @@ public class EofSensorInputStream extends InputStream implements ConnectionRelea
      * @param watcher   the watcher for events, or {@code null} for
      *                  auto-close behavior without notification
      */
-    public EofSensorInputStream(final InputStream in,
-                                final EofSensorWatcher watcher) {
+    public EofSensorInputStream(final InputStream in, final EofSensorWatcher watcher) {
         Args.notNull(in, "Wrapped stream");
         wrappedStream = in;
         selfClosed = false;

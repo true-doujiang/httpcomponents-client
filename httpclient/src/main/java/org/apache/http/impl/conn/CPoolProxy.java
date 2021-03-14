@@ -145,10 +145,19 @@ class CPoolProxy implements ManagedHttpClientConnection, HttpContext {
         return local != null ? !local.isClosed() : false;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public boolean isStale() {
         final HttpClientConnection conn = getConnection();
-        return conn != null ? conn.isStale() : true;
+//        return conn != null ? conn.isStale() : true;
+        if (conn != null) {
+            return conn.isStale();
+        } else {
+            return true;
+        }
     }
 
     @Override

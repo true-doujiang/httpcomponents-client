@@ -50,6 +50,7 @@ class HttpResponseProxy implements CloseableHttpResponse {
     //
     private final HttpResponse original;
 
+    // org.apache.http.impl.execchain.MainClientExec.execute 中设置进来的
     private final ConnectionHolder connHolder;
 
 
@@ -59,9 +60,13 @@ class HttpResponseProxy implements CloseableHttpResponse {
     public HttpResponseProxy(final HttpResponse original, final ConnectionHolder connHolder) {
         this.original = original;
         this.connHolder = connHolder;
+        //
         ResponseEntityProxy.enchance(original, connHolder);
     }
 
+    /**
+     * 用户代码调用
+     */
     @Override
     public void close() throws IOException {
         if (this.connHolder != null) {

@@ -98,18 +98,26 @@ public class MainClientExec implements ClientExecChain {
     // http连接池
     private final HttpClientConnectionManager connManager;
 
+    //
     private final ConnectionReuseStrategy reuseStrategy;
     private final ConnectionKeepAliveStrategy keepAliveStrategy;
     //
     private final HttpProcessor proxyHttpProcessor;
     private final AuthenticationStrategy targetAuthStrategy;
     private final AuthenticationStrategy proxyAuthStrategy;
+    //
     private final HttpAuthenticator authenticator;
+
     private final UserTokenHandler userTokenHandler;
+    // 构造器中直接 new 一个 BasicRouteDirector
     private final HttpRouteDirector routeDirector;
 
     /**
      * @since 4.4
+     *
+     * 调用方
+     * @see org.apache.http.impl.client.HttpClientBuilder# createMainExec
+     *
      */
     public MainClientExec(
             final HttpRequestExecutor requestExecutor,
@@ -128,7 +136,9 @@ public class MainClientExec implements ClientExecChain {
         Args.notNull(targetAuthStrategy, "Target authentication strategy");
         Args.notNull(proxyAuthStrategy, "Proxy authentication strategy");
         Args.notNull(userTokenHandler, "User token handler");
+
         this.authenticator      = new HttpAuthenticator();
+        //
         this.routeDirector      = new BasicRouteDirector();
         this.requestExecutor    = requestExecutor;
         this.connManager        = connManager;
@@ -212,8 +222,6 @@ public class MainClientExec implements ClientExecChain {
             // 调用匿名内部类的get()  managedConn:CPoolProxy
             managedConn = connRequest.get(timeout > 0 ? timeout : 0, TimeUnit.MILLISECONDS);
 
-            //if (managedConn instanceof CPoolProxy)
-//            System.out.println(Thread.currentThread().getName() + " MainClientExec.HttpClientConnection = " + managedConn);
             log.info(connRequest + " 获取到一个连接 managedConn=" + managedConn);
 
         } catch(final InterruptedException interrupted) {
@@ -250,6 +258,7 @@ public class MainClientExec implements ClientExecChain {
 
             HttpResponse response;
 
+            //
             for (int execCount = 1;; execCount++) {
 
                 // 重试时发现 httpEntity是不可以重复读取的则抛异常
@@ -264,11 +273,12 @@ public class MainClientExec implements ClientExecChain {
                 //  这里判断 managedConn有没有绑定好了socket
                 // 上面拿到的 managedConn可能是线程池中拿到的复用连接
                 boolean isOpen = managedConn.isOpen();
-                log.info("managedConn isOpen = " + isOpen);
+                log.info("MainClientExec managedConn isOpen = " + isOpen);
+
                 if (!isOpen) {
                     this.log.debug("Opening connection " + route);
                     try {
-                        // 创建一个socket 并连接到服务端
+                        // 创建一个socket 绑定到conn上，并连接到服务端
                         establishRoute(proxyAuthState, managedConn, route, request, context);
                     } catch (final TunnelRefusedException ex) {
                         if (this.log.isDebugEnabled()) {
@@ -309,13 +319,18 @@ public class MainClientExec implements ClientExecChain {
                 // 把获取到的http request 放到context中
                 context.setAttribute(HttpCoreContext.HTTP_REQUEST, request);
 
-                // HttpRequestExecutor
+                // HttpRequestExecutor  此时managedConn上已经有个socket对象了
                 response = requestExecutor.execute(request, managedConn, context);
 
+                // 如果返回值消息头中connection设置为close，则返回false
                 // The connection is in or can be brought to a re-usable state.
                 if (reuseStrategy.keepAlive(response, context)) {
+
                     // Set the idle duration of this connection
+                    // keep-alive的时间是从response中取出来的， 所以说服务端说保持多久就保持多久
+                    // 取出response消息头中，keep-alive的timeout值
                     final long duration = keepAliveStrategy.getKeepAliveDuration(response, context);
+
                     if (this.log.isDebugEnabled()) {
                         final String s;
                         if (duration > 0) {
@@ -325,21 +340,25 @@ public class MainClientExec implements ClientExecChain {
                         }
                         this.log.debug("Connection can be kept alive " + s);
                     }
+                    //设置失效时间
                     connHolder.setValidFor(duration, TimeUnit.MILLISECONDS);
                     connHolder.markReusable();
+
                 } else {
                     connHolder.markNonReusable();
                 }
 
-                if (needAuthentication(targetAuthState, proxyAuthState, route, response, context)) {
+                //
+                boolean b = needAuthentication(targetAuthState, proxyAuthState, route, response, context);
+                log.info("needAuthentication = " + b + " | " + route);
+                if (b) {
                     // Make sure the response body is fully consumed, if present
                     final HttpEntity entity = response.getEntity();
                     if (connHolder.isReusable()) {
                         EntityUtils.consume(entity);
                     } else {
                         managedConn.close();
-                        if (proxyAuthState.getState() == AuthProtocolState.SUCCESS
-                                && proxyAuthState.isConnectionBased()) {
+                        if (proxyAuthState.getState() == AuthProtocolState.SUCCESS && proxyAuthState.isConnectionBased()) {
                             this.log.debug("Resetting proxy auth state");
                             proxyAuthState.reset();
                         }
@@ -358,10 +377,13 @@ public class MainClientExec implements ClientExecChain {
                     if (!original.containsHeader(AUTH.PROXY_AUTH_RESP)) {
                         request.removeHeaders(AUTH.PROXY_AUTH_RESP);
                     }
+
                 } else {
                     break;
                 }
-            }
+
+            } // for end
+
 
             if (userToken == null) {
                 userToken = userTokenHandler.getUserToken(context);
@@ -422,8 +444,10 @@ public class MainClientExec implements ClientExecChain {
             final HttpRoute route,
             final HttpRequest request,
             final HttpClientContext context) throws HttpException, IOException {
+
         final RequestConfig config = context.getRequestConfig();
         final int timeout = config.getConnectTimeout();
+        // 都 实现 RouteInfo 接口
         final RouteTracker tracker = new RouteTracker(route);
         int step;
 
@@ -437,20 +461,17 @@ public class MainClientExec implements ClientExecChain {
                 case HttpRouteDirector.CONNECT_TARGET:
                     // PoolingHttpClientConnectionManager
                     this.connManager.connect(managedConn, route, timeout > 0 ? timeout : 0, context);
-                    tracker.connectTarget(route.isSecure());
+                    boolean secure1 = route.isSecure();
+                    tracker.connectTarget(secure1);
                     break;
                 case HttpRouteDirector.CONNECT_PROXY:
-                    this.connManager.connect(
-                            managedConn,
-                            route,
-                            timeout > 0 ? timeout : 0,
-                            context);
+                    this.connManager.connect(managedConn, route, timeout > 0 ? timeout : 0, context);
                     final HttpHost proxy  = route.getProxyHost();
-                    tracker.connectProxy(proxy, route.isSecure() && !route.isTunnelled());
+                    boolean b = route.isSecure() && !route.isTunnelled();
+                    tracker.connectProxy(proxy, b);
                     break;
                 case HttpRouteDirector.TUNNEL_TARGET: {
-                    final boolean secure = createTunnelToTarget(
-                            proxyAuthState, managedConn, route, request, context);
+                    final boolean secure = createTunnelToTarget(proxyAuthState, managedConn, route, request, context);
                     this.log.debug("Tunnel to target created.");
                     tracker.tunnelTarget(secure);
                 }   break;
@@ -467,19 +488,24 @@ public class MainClientExec implements ClientExecChain {
                 }   break;
 
                 case HttpRouteDirector.LAYER_PROTOCOL:
+                    //
                     this.connManager.upgrade(managedConn, route, context);
-                    tracker.layerProtocol(route.isSecure());
+                    boolean secure = route.isSecure();
+                    tracker.layerProtocol(secure);
                     break;
 
                 case HttpRouteDirector.UNREACHABLE:
                     throw new HttpException("Unable to establish route: planned = " + route + "; current = " + fact);
+
                 case HttpRouteDirector.COMPLETE:
                     this.connManager.routeComplete(managedConn, route, context);
                     break;
+
                 default:
                     throw new IllegalStateException("Unknown step indicator " + step + " from RouteDirector.");
             }
 
+            // step > 0
         } while (step > HttpRouteDirector.COMPLETE);
     }
 

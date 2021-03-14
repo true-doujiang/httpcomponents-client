@@ -53,7 +53,7 @@ import org.apache.http.util.Args;
 @Contract(threading = ThreadingBehavior.IMMUTABLE_CONDITIONAL)
 public class DefaultRoutePlanner implements HttpRoutePlanner {
 
-    //
+    // 只是根据HttpHost对象中的  http/https 返回一个port
     private final SchemePortResolver schemePortResolver;
 
     /**
@@ -81,7 +81,7 @@ public class DefaultRoutePlanner implements HttpRoutePlanner {
 
         final HttpClientContext clientContext = HttpClientContext.adapt(context);
         final RequestConfig config = clientContext.getRequestConfig();
-        final InetAddress local = config.getLocalAddress();
+        final InetAddress localAddress = config.getLocalAddress();
 
         HttpHost proxy = config.getProxy();
         if (proxy == null) {
@@ -92,10 +92,11 @@ public class DefaultRoutePlanner implements HttpRoutePlanner {
         final HttpHost target;
         if (host.getPort() <= 0) {
             try {
-                target = new HttpHost(
-                        host.getHostName(),
-                        this.schemePortResolver.resolve(host),
-                        host.getSchemeName());
+                String hostName = host.getHostName();
+                String schemeName = host.getSchemeName();
+                // 解析协议的端口号
+                int resolve = this.schemePortResolver.resolve(host);
+                target = new HttpHost(hostName, resolve, schemeName);
             } catch (final UnsupportedSchemeException ex) {
                 throw new HttpException(ex.getMessage());
             }
@@ -107,10 +108,10 @@ public class DefaultRoutePlanner implements HttpRoutePlanner {
 
         if (proxy == null) {
             // http
-            return new HttpRoute(target, local, secure);
+            return new HttpRoute(target, localAddress, secure);
         } else {
             // https
-            return new HttpRoute(target, local, proxy, secure);
+            return new HttpRoute(target, localAddress, proxy, secure);
         }
 
 //        return proxy == null

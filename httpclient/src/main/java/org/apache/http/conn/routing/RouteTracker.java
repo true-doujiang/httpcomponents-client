@@ -30,12 +30,14 @@ package org.apache.http.conn.routing;
 import java.net.InetAddress;
 
 import org.apache.http.HttpHost;
+import org.apache.http.impl.execchain.MainClientExec;
 import org.apache.http.util.Args;
 import org.apache.http.util.Asserts;
 import org.apache.http.util.LangUtils;
 
 /**
  * Helps tracking the steps in establishing a route.
+ * 帮助跟踪建立路线的步骤
  *
  * @since 4.0
  */
@@ -53,7 +55,9 @@ public final class RouteTracker implements RouteInfo, Cloneable {
     // the attributes above are fixed at construction time
     // now follow attributes that indicate the established route
 
-    /** Whether the first hop of the route is established. */
+    /** Whether the first hop of the route is established.
+     *  路由的第一跳是否建立
+     * */
     private boolean connected;
 
     /** The proxy chain, if any. */
@@ -84,6 +88,23 @@ public final class RouteTracker implements RouteInfo, Cloneable {
         this.layered      = LayerType.PLAIN;
     }
 
+
+    /**
+     * Creates a new tracker for the given route.
+     * Only target and origin are taken from the route,
+     * everything else remains to be tracked.
+     *
+     * @param route     the route to track
+     *
+     * 构造器
+     *
+     * 调用方 MainClientExec#establishRoute
+     *
+     */
+    public RouteTracker(final HttpRoute route) {
+        this(route.getTargetHost(), route.getLocalAddress());
+    }
+
     /**
      * @since 4.2
      */
@@ -93,17 +114,6 @@ public final class RouteTracker implements RouteInfo, Cloneable {
         this.tunnelled = TunnelType.PLAIN;
         this.layered = LayerType.PLAIN;
         this.secure = false;
-    }
-
-    /**
-     * Creates a new tracker for the given route.
-     * Only target and origin are taken from the route,
-     * everything else remains to be tracked.
-     *
-     * @param route     the route to track
-     */
-    public RouteTracker(final HttpRoute route) {
-        this(route.getTargetHost(), route.getLocalAddress());
     }
 
     /**
@@ -128,6 +138,7 @@ public final class RouteTracker implements RouteInfo, Cloneable {
     public final void connectProxy(final HttpHost proxy, final boolean secure) {
         Args.notNull(proxy, "Proxy host");
         Asserts.check(!this.connected, "Already connected");
+
         this.connected  = true;
         this.proxyChain = new HttpHost[]{ proxy };
         this.secure     = secure;
@@ -159,10 +170,11 @@ public final class RouteTracker implements RouteInfo, Cloneable {
         Args.notNull(proxy, "Proxy host");
         Asserts.check(this.connected, "No tunnel unless connected");
         Asserts.notNull(this.proxyChain, "No tunnel without proxy");
+
         // prepare an extended proxy chain
         final HttpHost[] proxies = new HttpHost[this.proxyChain.length+1];
-        System.arraycopy(this.proxyChain, 0,
-                         proxies, 0, this.proxyChain.length);
+
+        System.arraycopy(this.proxyChain, 0, proxies, 0, this.proxyChain.length);
         proxies[proxies.length-1] = proxy;
 
         this.proxyChain = proxies;
@@ -264,10 +276,18 @@ public final class RouteTracker implements RouteInfo, Cloneable {
      *          {@code null} if nothing has been tracked so far
      */
     public final HttpRoute toRoute() {
-        return !this.connected ?
-            null : new HttpRoute(this.targetHost, this.localAddress,
-                                 this.proxyChain, this.secure,
-                                 this.tunnelled, this.layered);
+//        return !this.connected ?
+//            null : new HttpRoute(this.targetHost, this.localAddress,
+//                                 this.proxyChain, this.secure,
+//                                 this.tunnelled, this.layered);
+
+        if (!this.connected) {
+            return null;
+        } else {
+            HttpRoute httpRoute = new HttpRoute(this.targetHost, this.localAddress, this.proxyChain,
+                                                this.secure, this.tunnelled, this.layered);
+            return  httpRoute;
+        }
     }
 
     /**

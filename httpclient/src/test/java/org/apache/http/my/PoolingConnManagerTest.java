@@ -43,7 +43,7 @@ public class PoolingConnManagerTest {
 
         GetThread[] threads = new GetThread[urisToGet.length];
         for (int i = 0; i < threads.length; i++) {
-            for (int j = 0; j < 20; j++) {
+            for (int j = 0; j < 10; j++) {
                 HttpGet httpGet = new HttpGet(urisToGet[i]);
                 httpGet.setConfig(requestConfig);
 

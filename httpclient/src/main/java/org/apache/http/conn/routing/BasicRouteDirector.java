@@ -77,9 +77,7 @@ public class BasicRouteDirector implements HttpRouteDirector {
      * @return  the first step
      */
     protected int firstStep(final RouteInfo plan) {
-
-        return (plan.getHopCount() > 1) ?
-            CONNECT_PROXY : CONNECT_TARGET;
+        return (plan.getHopCount() > 1) ? CONNECT_PROXY : CONNECT_TARGET;
     }
 
 
@@ -97,8 +95,7 @@ public class BasicRouteDirector implements HttpRouteDirector {
         if (fact.getHopCount() > 1) {
             return UNREACHABLE;
         }
-        if (!plan.getTargetHost().equals(fact.getTargetHost()))
-         {
+        if (!plan.getTargetHost().equals(fact.getTargetHost())) {
             return UNREACHABLE;
         // If the security is too low, we could now suggest to layer
         // a secure protocol on the direct connection. Layering on direct
@@ -114,8 +111,7 @@ public class BasicRouteDirector implements HttpRouteDirector {
 
         // Local address has to match only if the plan specifies one.
         if ((plan.getLocalAddress() != null) &&
-            !plan.getLocalAddress().equals(fact.getLocalAddress())
-            ) {
+            !plan.getLocalAddress().equals(fact.getLocalAddress())) {
             return UNREACHABLE;
         }
 

@@ -54,7 +54,8 @@ class ResponseEntityProxy extends HttpEntityWrapper implements EofSensorWatcher 
     public static void enchance(final HttpResponse response, final ConnectionHolder connHolder) {
         final HttpEntity entity = response.getEntity();
         if (entity != null && entity.isStreaming() && connHolder != null) {
-            response.setEntity(new ResponseEntityProxy(entity, connHolder));
+            ResponseEntityProxy responseEntityProxy = new ResponseEntityProxy(entity, connHolder);
+            response.setEntity(responseEntityProxy);
         }
     }
 
@@ -89,6 +90,9 @@ class ResponseEntityProxy extends HttpEntityWrapper implements EofSensorWatcher 
         return false;
     }
 
+    /**
+     *
+     */
     @Override
     public InputStream getContent() throws IOException {
         return new EofSensorInputStream(this.wrappedEntity.getContent(), this);

@@ -51,20 +51,56 @@ public class GetTest {
 
 
 
-
+            // HttpResponseProxy
             CloseableHttpResponse response = null;
             response = httpClient.execute(httpGet);
             try {
+                // entity: ResponseEntityProxy
                 HttpEntity entity = response.getEntity();
                 System.out.println(response.getStatusLine());
                 if (entity != null) {
                     System.out.println("内容长度：" + entity.getContentLength());
-                    System.out.println("响应内容：" + EntityUtils.toString(entity));
+                    //System.out.println("响应内容：" + EntityUtils.toString(entity));
                 }
             } finally {
+                // 不要小看这个方法哦
                 response.close();
             }
-        } catch (IOException e) {
+
+            for (int i = 0; i < 15; i++) {
+                Thread.sleep(1000);
+                System.out.println("i = " + i);
+            }
+
+            new Thread(() -> {
+                int i = 0;
+                while (true) {
+                    System.out.println("i = " + i);
+                    i++;
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+
+            CloseableHttpResponse response2 = null;
+            response2 = httpClient.execute(httpGet);
+            try {
+                HttpEntity entity2 = response2.getEntity();
+                System.out.println(response2.getStatusLine());
+                if (entity2 != null) {
+                    System.out.println("内容长度2：" + entity2.getContentLength());
+                    System.out.println("响应内容2：" + EntityUtils.toString(entity2));
+                }
+            } finally {
+                response2.close();
+            }
+
+
+
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {

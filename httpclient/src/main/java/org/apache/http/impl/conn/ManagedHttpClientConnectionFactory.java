@@ -171,8 +171,7 @@ public class ManagedHttpClientConnectionFactory
                 requestWriterFactory,
                 responseParserFactory);
 
-        System.out.println("ManagedHttpClientConnectionFactory create LoggingManagedHttpClientConnection = "
-                + connection);
+        log.info("create LoggingManagedHttpClientConnection = " + connection);
 
         return connection;
     }

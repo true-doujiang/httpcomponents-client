@@ -52,8 +52,7 @@ public interface ConnectionReleaseTrigger {
      *             in case of an IO problem. The connection will be released
      *             anyway.
      */
-    void releaseConnection()
-        throws IOException;
+    void releaseConnection() throws IOException;
 
     /**
      * Releases the connection without the option of keep-alive.
@@ -63,7 +62,6 @@ public interface ConnectionReleaseTrigger {
      * @throws IOException      in case of an IO problem.
      *         The connection will be released anyway.
      */
-    void abortConnection()
-        throws IOException;
+    void abortConnection() throws IOException;
 
 }

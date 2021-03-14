@@ -71,18 +71,25 @@ class CPool extends AbstractConnPool<HttpRoute, ManagedHttpClientConnection, CPo
 
     /**
      * 创建 CPoolEntry
+     *
+     * 父类中调用
      */
     @Override
     protected CPoolEntry createEntry(final HttpRoute route, final ManagedHttpClientConnection conn) {
         final String id = Long.toString(COUNTER.getAndIncrement());
+        //
         CPoolEntry cPoolEntry = new CPoolEntry(this.log, id, route, conn, this.timeToLive, this.timeUnit);
-        System.out.println("CPool createEntry cPoolEntry = " + cPoolEntry);
+        log.info("createEntry = " + cPoolEntry);
         return cPoolEntry;
     }
 
+    /**
+     *
+     */
     @Override
     protected boolean validate(final CPoolEntry entry) {
-        return !entry.getConnection().isStale();
+        ManagedHttpClientConnection connection = entry.getConnection();
+        return !connection.isStale();
     }
 
     @Override

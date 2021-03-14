@@ -32,10 +32,13 @@ import org.apache.http.protocol.HttpContext;
 /**
  * Interface for deciding how long a connection can remain
  * idle before being reused.
+ * 用于确定连接在重用之前可以保持空闲状态的时间的接口。
+ *
  * <p>
  * Implementations of this interface must be thread-safe. Access to shared
  * data must be synchronized as methods of this interface may be executed
  * from multiple threads.
+ * 此接口的实现必须是线程安全的。由于可以从多个线程执行此接口的方法，因此必须同步访问共享数据
  *
  * @since 4.0
  */

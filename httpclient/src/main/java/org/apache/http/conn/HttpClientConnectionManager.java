@@ -97,8 +97,7 @@ public interface HttpClientConnectionManager {
      *
      * @see #closeExpiredConnections()
      */
-    void releaseConnection(
-            HttpClientConnection conn, Object newState, long validDuration, TimeUnit timeUnit);
+    void releaseConnection(HttpClientConnection conn, Object newState, long validDuration, TimeUnit timeUnit);
 
     /**
      * Connects the underlying connection socket to the connection target in case

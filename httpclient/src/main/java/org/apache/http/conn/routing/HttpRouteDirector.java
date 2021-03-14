@@ -32,6 +32,8 @@ package org.apache.http.conn.routing;
  * Implementations of this interface compare a planned route with
  * a tracked route and indicate the next step required.
  *
+ * 提供建立路线的指导。该接口的实现将计划的路线与跟踪的路线进行比较，并指示所需的下一步。
+ *
  * @since 4.0
  */
 public interface HttpRouteDirector {

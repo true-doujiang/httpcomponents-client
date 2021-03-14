@@ -53,7 +53,7 @@ class CPoolEntry extends PoolEntry<HttpRoute, ManagedHttpClientConnection> {
     /**
      * default constructor
      *
-     * org.apache.http.impl.conn.CPool#createEntry() 调用
+     * @see org.apache.http.impl.conn.CPool#createEntry 调用
      */
     public CPoolEntry(
             final Logger log,

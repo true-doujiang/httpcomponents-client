@@ -28,6 +28,7 @@ package org.apache.http.impl.client;
 
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
+import org.apache.http.HeaderIterator;
 import org.apache.http.HttpResponse;
 import org.apache.http.annotation.Contract;
 import org.apache.http.annotation.ThreadingBehavior;
@@ -51,22 +52,31 @@ public class DefaultConnectionKeepAliveStrategy implements ConnectionKeepAliveSt
 
     public static final DefaultConnectionKeepAliveStrategy INSTANCE = new DefaultConnectionKeepAliveStrategy();
 
+    /**
+     *
+     */
     @Override
     public long getKeepAliveDuration(final HttpResponse response, final HttpContext context) {
+
         Args.notNull(response, "HTTP response");
-        final HeaderElementIterator it = new BasicHeaderElementIterator(
-                response.headerIterator(HTTP.CONN_KEEP_ALIVE));
+
+        HeaderIterator iterator = response.headerIterator(HTTP.CONN_KEEP_ALIVE);
+        final HeaderElementIterator it = new BasicHeaderElementIterator(iterator);
+
         while (it.hasNext()) {
             final HeaderElement he = it.nextElement();
             final String param = he.getName();
             final String value = he.getValue();
+
             if (value != null && param.equalsIgnoreCase("timeout")) {
                 try {
                     return Long.parseLong(value) * 1000;
                 } catch(final NumberFormatException ignore) {
+
                 }
             }
         }
+
         return -1;
     }
 
